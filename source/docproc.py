@@ -29,30 +29,30 @@ class DocProcessor(HTMLParser):
 
     def handle_data(self, data):
         if (not self.in_script) and (not self.in_cite) and (not self.in_span):
-            self.out_file.write(data.lower())
-
-
+            self.out_file.write(data.lower().strip() + " ")
 
 
 if __name__ == '__main__':
     try:
         dp = DocProcessor()
-        in_file_name = "../docsnew/Arches_National_Park.htm"
-        test_file = open(in_file_name, "r")
+        in_file_location = "../docsnew/"
 
-        out_name = ""
-        for i in range(11, len(in_file_name)):
-            if in_file_name[i] == '.':
-                break
-            out_name += in_file_name[i]
-        dp.out_file = open("../processed_docsnew/" + out_name + ".txt", "w")
-        dp.out_file.write("<!DOCTYPE html>")
+        for root, dirs, files in os.walk(in_file_location):
+            for f in files:
+                if f.endswith(".htm") or f.endswith(".html"):
+                    out_name = ""
+                    for i in range(0, len(f)):
+                        if f[i] == '.':
+                            break
+                        out_name += f[i]
 
-        # the docsnew files have each tag written in one line
-        read_from_file = test_file.readline()
-        while(read_from_file):
-            dp.feed(read_from_file)
-            read_from_file = test_file.readline()
+                    curr_file = open((in_file_location + f), "r", encoding="UTF8")
+                    dp.out_file = open(("../processed_docsnew/" + out_name + ".txt"), "w", encoding="UTF8")
+
+                    read_from_file = curr_file.readline()
+                    while(read_from_file):
+                        dp.feed(read_from_file)
+                        read_from_file = curr_file.readline() # the docsnew files have each tag written in one line
 
 
     except Exception as e:
