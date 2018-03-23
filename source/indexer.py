@@ -4,24 +4,9 @@ from collections import OrderedDict
 class IndexEntry:
     def __init__(self):
         self.term = ""
-        self.doc_id = -1
-        self.posting_list = PostingList()
-        self.posting_size = 0
-
-class PostingList:
-    def __init__(self):
-        self.doc_id = -1
-        self.df = 0
-        self.token_stream = None
-        self.next = None
-        self.size = 0
-
-    def getTokenStream(self):
-        None
-
-    def countDocFrequency(self):
-        None
-
+        self.docID_list = [] # the size of this list is the term's DF
+        self.term_tf = 0
+        self.posting_list = {}
 
 
 if __name__ == '__main__':
@@ -29,39 +14,57 @@ if __name__ == '__main__':
         proc_doc_location = "../processed_testdoc/"
         proc_doc_location = "../testdoc/" # NOTE: files in this directory contain punctuation
         document_list = {}
-        count = 1
+        current_docID = 1
         inverted_index = {}
 
-        # build the unsorted inverted index
-        # if a term appears in multiple documents, the DocIDs will be saved as a list
-        # inverted_index = { term : [[DocID], TF] }
+        """
+        build the unsorted inverted index
+        if a term appears in multiple documents, the DocIDs will be saved as a list
+            inverted_index = { term : IndexEntry }
+            IndexEntry.posting_list = { docID : TF }
+        """
         for root, dirs, files in os.walk(proc_doc_location):
             for f in files:
                 if f.endswith(".txt"):
-                    document_list[f] = count
-
+                    document_list[f] = current_docID
                     curr_file = open((proc_doc_location + f), "r", encoding="UTF8")
+
+                    # read a line; convert to lowercase; remove punctuation, and separate the words
                     read_from_file = (re.sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
                     while(read_from_file):
-                        for r in read_from_file:
-                            try:
-                                inverted_index[r][1] += 1
-                            except KeyError:
-                                inverted_index[r] = [[], 1]
-                            inverted_index[r][0].append(count)
-                        read_from_file = (re.sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
+                        for r in read_from_file: # for every word in this line of the file
+                            try: # see if this term already exists in the dictionary
+                                inverted_index[r]
+                            except KeyError: # create new entry for the term
+                                inverted_index[r] = IndexEntry()
 
-                    count += 1
+                            try: # see if a posting list entry for this document exists in this term's index entry
+                                inverted_index[r].posting_list[current_docID]
+                            except KeyError:
+                                inverted_index[r].posting_list[current_docID] = 0 # create the posting list entry and initialize the TF as zero
+                                inverted_index[r].docID_list.append(current_docID) # this is a new document
+
+                            inverted_index[r].term = r
+                            inverted_index[r].posting_list[current_docID] += 1 # increment the TF for this posting list entry
+                            inverted_index[r].term_tf += 1 # Note: this is the sum of the posting list entries' TF values
+
+                        read_from_file = (re.sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
+                    current_docID += 1
 
         inverted_index = OrderedDict(sorted(inverted_index.items(), key=lambda t: t[0])) # sort the inverted index
 
-        for x, [ys, z] in inverted_index.items():
-            print( "{%s, %s, %s}" % (x, len(ys), z))
+        """ OUTPUT FOR DEBUGGING
+        for term, index in inverted_index.items():
+            print(end="" "{ %s , %s , %s } \t\t -> " % (index.term, len(index.docID_list), index.term_tf) )
+            first = True
+            for docID, TF in index.posting_list.items():
+                if not first:
+                    print(end="" " -> ")
+                print(end="" "[%s | %s]" % (docID, TF))
+                first = False
+            print("")
+        """
 
 
     except Exception as e:
         raise
-
-        """
-        To implement the stemmer and stopper, Python provides easily available stemmers and stoppers libraries that can be imported, created by the Natural Language Toolkit (NLTK). Each processed file is output to a new corresponding processed file. Once the file has been processed, each word is added to the dictionary array as a tuple containing the word and its document frequency, with a pointer to the posting list object that contains the document number, frequency, and a pointer to the next object, creating a linked list. After document preprocessing is done, the dictionary data is used to calculate the TF-IDF based ranking for each document. We are currently working on comparing the query and document vectors efficiently, and determining which data structures would be most beneficial to hold the vectors and inverted index.
-        """
