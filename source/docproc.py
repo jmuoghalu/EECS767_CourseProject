@@ -1,8 +1,9 @@
-import math, os, re, sys
+import os
 from html.parser import HTMLParser
 from html.entities import name2codepoint
-from nltk.stem.porter import *
+from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
+from re import sub as re_sub
 
 class DocProcessor(HTMLParser):
 
@@ -32,7 +33,7 @@ class DocProcessor(HTMLParser):
 
     def handle_data(self, data):
         if (not self.in_script) and (not self.in_cite) and (not self.in_span):
-            data_list = (re.sub(r"[^a-zA-Z0-9_ ]+", "", data.lower().strip())).split()
+            data_list = (re_sub(r"[^a-zA-Z0-9_ ]+", "", data.lower().strip())).split()
                 # re.sub = remove non alphanumeric characters from the string; NOTE: this alters the format of hyperlinks
             rm_dl_stopwords = [dl for dl in data_list if dl not in stopwords.words("english")]
             stemmed_list = [self.stemmer.stem(dl) for dl in rm_dl_stopwords]
@@ -42,14 +43,23 @@ class DocProcessor(HTMLParser):
                     self.out_file.write(sl + " ")
 
 
-if __name__ == '__main__':
-    try:
-        dp = DocProcessor()
-        in_file_location = "../docsnew/"
+    def runDocProc(self, in_file_location):
+        try:
+            proc_location = ""
 
-        for root, dirs, files in os.walk(in_file_location):
-            for f in files:
-                if f.endswith(".htm") or f.endswith(".html"):
+            if not in_file_location[len(in_file_location)-1] == '/':
+                in_file_location += "/"
+
+            if not os.path.exists(in_file_location):
+                print("The Input Directory Does Not Exist")
+                return proc_location
+
+            for root, dirs, files in os.walk(in_file_location):
+                proc_location = "../processed_" + os.path.basename(os.path.dirname(root)) + "/"
+                if not os.path.exists(proc_location):
+                    os.makedirs(proc_location)
+
+                for f in files:
                     out_name = ""
                     for i in range(0, len(f)):
                         if f[i] == '.':
@@ -57,12 +67,17 @@ if __name__ == '__main__':
                         out_name += f[i]
 
                     curr_file = open((in_file_location + f), "r", encoding="UTF8")
-                    dp.out_file = open(("../processed_docsnew/" + out_name + ".txt"), "w", encoding="UTF8")
+                    self.out_file = open((proc_location + out_name + ".txt"), "w", encoding="UTF8")
 
                     read_from_file = curr_file.readline()
                     while(read_from_file):
-                        dp.feed(read_from_file)
+                        self.feed(read_from_file)
                         read_from_file = curr_file.readline() # the docsnew files have each tag written in one line
 
-    except Exception as e:
-        raise
+                    curr_file.close()
+                    self.out_file.close()
+
+            return proc_location
+
+        except Exception as e:
+            raise
