@@ -5,6 +5,7 @@ from re import sub as re_sub
 class InvertedIndex:
     def __init__(self):
         self.inverted_index = {}
+        self.document_list = []
 
     class IndexEntry:
         def __init__(self):
@@ -18,7 +19,6 @@ class InvertedIndex:
         try:
             #proc_doc_location = "../processed_testdoc/"
             #proc_doc_location = "../testdoc/" # NOTE: files in this directory contain punctuation
-            document_list = {}
             current_docID = 1
 
             if not proc_doc_location[len(proc_doc_location)-1] == '/':
@@ -36,35 +36,34 @@ class InvertedIndex:
             """
             for root, dirs, files in os.walk(proc_doc_location):
                 for f in files:
-                    if f.endswith(".txt"):
-                        document_list[f] = current_docID
-                        curr_file = open((proc_doc_location + f), "r", encoding="UTF8")
+                    self.document_list.append(os.path.splitext(f)[0])
+                    curr_file = open((proc_doc_location + f), "r", encoding="UTF8")
 
-                        # read a line; convert to lowercase; remove punctuation, and separate the words
+                    # read a line; convert to lowercase; remove punctuation, and separate the words
+                    read_from_file = (re_sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
+                    while(read_from_file):
+                        for r in read_from_file: # for every word in this line of the file
+                            try: # see if this term already exists in the dictionary
+                                self.inverted_index[r]
+                            except KeyError: # create new entry for the term
+                                self.inverted_index[r] = self.IndexEntry()
+
+                            try: # see if a posting list entry for this document exists in this term's index entry
+                                self.inverted_index[r].posting_list[current_docID]
+                            except KeyError:
+                                self.inverted_index[r].posting_list[current_docID] = 0 # create the posting list entry and initialize the TF as zero
+                                self.inverted_index[r].docID_list.append(current_docID) # this is a new document
+
+                            self.inverted_index[r].term = r
+                            self.inverted_index[r].posting_list[current_docID] += 1 # increment the TF for this posting list entry
+                            self.inverted_index[r].term_tf += 1 # Note: this is the sum of the posting list entries' TF values
+
                         read_from_file = (re_sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
-                        while(read_from_file):
-                            for r in read_from_file: # for every word in this line of the file
-                                try: # see if this term already exists in the dictionary
-                                    self.inverted_index[r]
-                                except KeyError: # create new entry for the term
-                                    self.inverted_index[r] = self.IndexEntry()
+                    current_docID += 1
 
-                                try: # see if a posting list entry for this document exists in this term's index entry
-                                    self.inverted_index[r].posting_list[current_docID]
-                                except KeyError:
-                                    self.inverted_index[r].posting_list[current_docID] = 0 # create the posting list entry and initialize the TF as zero
-                                    self.inverted_index[r].docID_list.append(current_docID) # this is a new document
+            self.inverted_index = OrderedDict(sorted(self.inverted_index.items(), key=lambda t: t[0])) # sort the inverted index
 
-                                self.inverted_index[r].term = r
-                                self.inverted_index[r].posting_list[current_docID] += 1 # increment the TF for this posting list entry
-                                self.inverted_index[r].term_tf += 1 # Note: this is the sum of the posting list entries' TF values
-
-                            read_from_file = (re_sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
-                        current_docID += 1
-
-            inverted_index = OrderedDict(sorted(self.inverted_index.items(), key=lambda t: t[0])) # sort the inverted index
-
-            """ OUTPUT FOR DEBUGGING"""
+            """ OUTPUT FOR DEBUGGING
             for term, index in self.inverted_index.items():
                 print(end="" "{ %s , %s , %s } " % (index.term, len(index.docID_list), index.term_tf) )
                 first = True
@@ -79,8 +78,6 @@ class InvertedIndex:
                     first = False
                 print("")
             #"""
-            #return self.inverted_index
-
 
         except Exception as e:
             raise
