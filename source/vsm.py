@@ -8,18 +8,19 @@ from indexer import InvertedIndex as InvertedIndexClass
 
 class VectorSpaceModel:
     def __init__(self, iic: InvertedIndexClass):
-        self.terms_idf = {} # {term, IDF}
+        self.terms_idf = {} # {term: IDF}
         self.terms_weights = {} # {term: [weights]}
         self.document_vectors = {} # [[docID: [weights]] # THIS VARIABLE DOES NOT NEED TO BE FILLED
-        self.document_lengths = []
+        self.document_lengths = [] # [[docID, docLength]]
 
 
         # using list instead of dictionary to preserver order
         for i in range(0, len(iic.document_list)):
             self.document_vectors[i] = [0 for i in range(0,len(iic.inverted_index))]
-            self.document_lengths.append([i, 0]) # [docID: docLength]
+            self.document_lengths.append([(i+1), 0]) # [docID: docLength]
 
         # for all of the inverted index terms and their posting lists, calculate the IDF values and the weights
+        # Note: the inverted_index is sorted alphabetically after its creation
         doc_vec_index = 0
         for term,entry in iic.inverted_index.items():
             # calculate and save the IDF value for this term

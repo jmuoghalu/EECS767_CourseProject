@@ -10,6 +10,7 @@ class InvertedIndex:
     class IndexEntry:
         def __init__(self):
             self.term = ""
+            self.term_idf = 0
             self.docID_list = [] # the size of this list is the term's DF
             self.term_tf = 0
             self.posting_list = {}
