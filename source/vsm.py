@@ -1,89 +1,43 @@
-import math, os, re, sys
+import math, os
 from indexer import InvertedIndex as InvertedIndexClass
+
+"""
+    Dictionary: {term: idf}
+    Dictionary: {term: [weights]}
+"""
 
 class VectorSpaceModel:
     def __init__(self, iic: InvertedIndexClass):
-        self.column_headers = ["term", "IDF"] + iic.document_list
+        self.terms_idf = {} # {term, IDF}
+        self.terms_weights = {} # {term: [weights]}
+        self.document_vectors = {} # [[docID: [weights]] # THIS VARIABLE DOES NOT NEED TO BE FILLED
+        self.document_lengths = []
 
-        # initialize each row with the term and the IDF value which are the first two indices
-        self.term_rows = [
-                [
-                    term,
-                    float("{0:.3f}".format(math.log10( len(iic.document_list) / len(entry.docID_list) ))),
-                ] +
-                [
-                    0 for i in range(0, len(iic.document_list))
-                ]
-            for term, entry in iic.inverted_index.items()
-        ]
-        for row in self.term_rows: # fill the tf-idf weights for each term
-            entry = iic.inverted_index[row[0]]
+
+        # using list instead of dictionary to preserver order
+        for i in range(0, len(iic.document_list)):
+            self.document_vectors[i] = [0 for i in range(0,len(iic.inverted_index))]
+            self.document_lengths.append([i, 0]) # [docID: docLength]
+
+        # for all of the inverted index terms and their posting lists, calculate the IDF values and the weights
+        doc_vec_index = 0
+        for term,entry in iic.inverted_index.items():
+            # calculate and save the IDF value for this term
+            self.terms_idf[term] = float("{0:.3f}".format(math.log10( len(iic.document_list) / len(entry.docID_list) )))
+
+            # initialize all weights as zero
+            self.terms_weights[term] = [0 for i in range(0, len(iic.document_list))]
+
+            # if the term exists in this document, update the weight to the actual value
             for docID, TF in entry.posting_list.items():
-                row[2 + (docID-1)] = row[1] * TF
+                # ex.) document #1 is located at index 0 in the terms_weights value list
+                weight = self.terms_idf[term] * TF
+                self.terms_weights[term][(docID-1)] = weight
+                self.document_vectors[(docID-1)][doc_vec_index] = weight
+                self.document_lengths[(docID-1)][1] += weight*weight
 
-        self.document_vectors = []
+            doc_vec_index += 1
 
-    def document_lengths(self, document_index):
-        v = [row[document_index] for row in self.term_rows]
-        length = 0
-        for x in v:
-            length += (x * x)
-        return float("{0:.3f}".format(math.sqrt(length)))
-
-
-def debugPrint(vsm,iic):
-
-    for term, index in iic.inverted_index.items():
-        print(end="" "{ %s , %s , %s } " % (index.term, len(index.docID_list), index.term_tf) )
-        first = True
-        if len(index.term) < 4:
-            print(end="" "\t")
-        print(end="" "\t\t -> ")
-
-        for docID, TF in index.posting_list.items():
-            if not first:
-                print(end="" " -> ")
-            print(end="" "[%s | %s]" % (docID, TF))
-            first = False
-        print("")
-
-    print("\n\n")
-
-    for x in vsm.column_headers:
-        print(x + "\t\t", end='')
-    print()
-
-    for row in vsm.term_rows:
-        if len(row[0]) < 8:
-            print(row[0] + "\t\t", end='')
-        else:
-            print(row[0] + "\t", end='')
-
-        for val in row[1:]:
-            print(str(val) + "\t\t", end='')
-        print()
-
-    print("\nDocument Lengths\n\t\t\t\t", end='')
-    for x in range(2, len(vsm.column_headers)):
-        print(str(vsm.document_lengths(x)) + "\t\t", end='')
-
-
-
-if __name__ == "__main__":
-    try:
-        proc_doc_location = "../testdoc"
-        iic = InvertedIndexClass()
-        iic.createInvertedIndex(proc_doc_location)
-        vsm = VectorSpaceModel(iic)
-        root, dirs, files = os.walk(proc_doc_location).__next__()
-
-        debugPrint(vsm, iic)
-
-
-
-    except Exception as e:
-        raise
-
-    """
-    To implement the stemmer and stopper, Python provides easily available stemmers and stoppers libraries that can be imported, created by the Natural Language Toolkit (NLTK). Each processed file is output to a new corresponding processed file. Once the file has been processed, each word is added to the dictionary array as a tuple containing the word and its document frequency, with a pointer to the posting list object that contains the document number, frequency, and a pointer to the next object, creating a linked list. After document preprocessing is done, the dictionary data is used to calculate the TF-IDF based ranking for each document. We are currently working on comparing the query and document vectors efficiently, and determining which data structures would be most beneficial to hold the vectors and inverted index.
-    """
+        #complete the calculations of the document lengths by taking the square root
+        for i in range(0, len(self.document_lengths)):
+            self.document_lengths[i][1] = float("{0:.3f}".format(math.sqrt(self.document_lengths[i][1])))

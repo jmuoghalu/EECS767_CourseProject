@@ -5,7 +5,7 @@ from re import sub as re_sub
 class InvertedIndex:
     def __init__(self):
         self.inverted_index = {}
-        self.document_list = []
+        self.document_list = [] # [[docName, docID]] # using a list instead of a dictionary to preserve ordering by docID
 
     class IndexEntry:
         def __init__(self):
@@ -36,7 +36,7 @@ class InvertedIndex:
             """
             for root, dirs, files in os.walk(proc_doc_location):
                 for f in files:
-                    self.document_list.append(os.path.splitext(f)[0])
+                    self.document_list.append([(os.path.splitext(f)[0]), current_docID])
                     curr_file = open((proc_doc_location + f), "r", encoding="UTF8")
 
                     # read a line; convert to lowercase; remove punctuation, and separate the words
