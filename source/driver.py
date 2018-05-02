@@ -1,6 +1,7 @@
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from re import sub as re_sub
+from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
@@ -57,7 +58,7 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
     print(end='' "Result: [D%s, %s]" %
         (query.all_similarities[0][0], query.all_similarities[0][1]))
     for i in range(1, len(query.all_similarities)):
-        print(end='' ", [D%s, %s]" %
+        print(end='' ",\n[D%s, %s]" %
             (query.all_similarities[i][0], query.all_similarities[i][1]))
     #"""
     print("\n\n")
@@ -65,11 +66,14 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
 
 if __name__ == "__main__":
     try:
-        base_doc_name = "testdoc" # the actual name of the folder containing the processed files
-        proc_doc_location = "../" + base_doc_name
+        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        #doc_basename = "testdoc" # the actual name of the folder containing the processed files
+        doc_location = "../file_cache/processed/" + doc_basename
 
+        #dp = DPClass()
+        #dp.runDocProc(doc_location)
         iic = InvertedIndexClass()
-        iic.createInvertedIndex(proc_doc_location)
+        iic.createInvertedIndex(doc_location)
         vsm = VSMClass(iic)
         stemmer = PorterStemmer()
 
@@ -90,7 +94,7 @@ if __name__ == "__main__":
             # TODO:
                 1.) terminal I/O for user strings
                 2.) create runQuery function which will pass the user's strings, run them through the stop list and stemmer, and use them to create the QueryClass object
-                3.) take the sorted similarity list, retrieve the document ID's, use the ID's to get the document basenames, and use the basenames to retrieve pages from the document source folder (NOT THE PROCESSED FOLDER) 
+                3.) take the sorted similarity list, retrieve the document ID's, use the ID's to get the document basenames, and use the basenames to retrieve pages from the document source folder (NOT THE PROCESSED FOLDER)
         """
 
     except Exception as e:

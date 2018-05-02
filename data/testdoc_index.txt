@@ -5,17 +5,7 @@ D4:		D4.txt
 
 
 
-Term:	a
-	DF:	3
-	TF:	3
-	IDF:	0.125
-	Posting List: (first line = docID; second line = docTF)
-		1		2		3		
-
-		1		1		1		
-
-
-Term:	arrived
+Term:	arriv
 	DF:	3
 	TF:	3
 	IDF:	0.125
@@ -25,7 +15,7 @@ Term:	arrived
 		1		1		1		
 
 
-Term:	damaged
+Term:	damag
 	DF:	2
 	TF:	2
 	IDF:	0.301
@@ -35,7 +25,7 @@ Term:	damaged
 		1		1		
 
 
-Term:	delivery
+Term:	deliveri
 	DF:	1
 	TF:	1
 	IDF:	0.602
@@ -63,26 +53,6 @@ Term:	gold
 		1		3		
 
 		1		1		
-
-
-Term:	in
-	DF:	3
-	TF:	3
-	IDF:	0.125
-	Posting List: (first line = docID; second line = docTF)
-		1		2		3		
-
-		1		1		1		
-
-
-Term:	of
-	DF:	3
-	TF:	3
-	IDF:	0.125
-	Posting List: (first line = docID; second line = docTF)
-		1		2		3		
-
-		1		1		1		
 
 
 Term:	shipment

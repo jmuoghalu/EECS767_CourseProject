@@ -45,6 +45,7 @@ class DocProcessor(HTMLParser):
 
     def runDocProc(self, in_file_location):
         try:
+            # in_file_location is a folder within the file_cache/unprocessed/
             proc_location = ""
 
             if not in_file_location[len(in_file_location)-1] == '/':
@@ -55,7 +56,8 @@ class DocProcessor(HTMLParser):
                 return proc_location
 
             for root, dirs, files in os.walk(in_file_location):
-                proc_location = "../processed_" + os.path.basename(os.path.dirname(root)) + "/"
+                proc_location = "../file_cache/processed/" + os.path.basename(os.path.dirname(root)) + "/"
+                print("proc_location: %s" % proc_location)
                 if not os.path.exists(proc_location):
                     os.makedirs(proc_location)
 
