@@ -38,9 +38,10 @@ class InvertedIndex:
             for root, dirs, files in os.walk(proc_doc_location):
                 for f in files:
                     # drops the file extension
-                    #self.document_list.append([(os.path.splitext(f)[0]), current_docID])
+                    self.document_list.append([(os.path.splitext(f)[0]), current_docID])
                     # does not drop the file extension
-                    self.document_list.append([f, current_docID])
+                    #self.document_list.append([f, current_docID])
+
                     curr_file = open((proc_doc_location + f), "r", encoding="UTF8")
 
                     # read a line; convert to lowercase; remove punctuation, and separate the words
@@ -113,6 +114,9 @@ class InvertedIndex:
 
         iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
         iid_file = None
+        if not os.path.isfile(iid_file_name):
+            self.createInvertedIndex(proc_doc_location)
+
         iid_file = open(iid_file_name, "r", encoding="UTF8")
 
         # This function is incomplete

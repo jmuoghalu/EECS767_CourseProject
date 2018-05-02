@@ -5,7 +5,7 @@ from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
-import sys
+import os, sys
 
 def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
 
@@ -64,11 +64,50 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
     #"""
     print("\n\n")
 
+def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location):
+
+    if not proc_doc_location[len(proc_doc_location)-1] == '/':
+        proc_doc_location += "/"
+
+    if not os.path.exists(proc_doc_location):
+        print("The Input Directory Does Not Exist")
+        return
+
+    try:
+        unprocessed_location = "../file_cache/unprocessed/" + os.path.basename(os.path.dirname(proc_doc_location))
+        most_similar_documents = []
+        # get the documents
+            # similarities = [[docID, query-doc similarity]]
+            # iic.document_list = [[docName, docID]]
+
+        doc_list_copy = iic.document_list
+        for cs in similarities:
+            for doc in doc_list_copy:
+                if cs[0] == doc[1]:
+                    most_similar_documents.append(doc[0])
+                    doc_list_copy.remove(doc)
+
+        for root, dirs, files in os.walk(unprocessed_location):
+            for i in range(0, len(most_similar_documents)):
+                name = most_similar_documents[i]
+                for f in files:
+                    if name == os.path.splitext(f)[0]:
+                        most_similar_documents[i] = f
+            break
+            # search directory for file name without extension
+            # take the file, and replace the index with it
+
+        return [unprocessed_location, most_similar_documents]
+
+    except Exception as e:
+        raise()
+
+
 
 if __name__ == "__main__":
     try:
-        #doc_basename = "docsnew" # the actual name of the folder containing the processed files
-        doc_basename = "testdoc" # the actual name of the folder containing the processed files
+        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        #doc_basename = "testdoc" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         #dp = DPClass()
@@ -76,7 +115,11 @@ if __name__ == "__main__":
         iic = InvertedIndexClass()
         iic.createInvertedIndex(doc_location)
         iic.loadInvertedIndex(doc_location)
-        vsm = VSMClass(iic)
+
+        vsm = VSMClass(iic, doc_basename)
+        vsm.createEntireModel(iic)
+        #vsm.computeDocLengths()
+
         stemmer = PorterStemmer()
 
         continueLoop = True
@@ -84,7 +127,7 @@ if __name__ == "__main__":
 
         print("Welcome to the Search Engine\n")
         while continueLoop:
-            print("Select from the Following Options:\n\t1.) Search\n\t2.) Exit")
+            print("\n\nSelect from the Following Options:\n\t1.) Search\n\t2.) Exit")
             from_user = input("Your Choice: ")
 
             if from_user == "1":
@@ -98,7 +141,22 @@ if __name__ == "__main__":
                         query.append(stemmer.stem(formatted_query[i]))
 
                 qr = QueryClass(query, vsm)
-                debugPrint(qr, vsm, iic)
+
+                # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0
+                location_and_documents = getDocuments(qr.all_similarities, iic, doc_location)
+
+                if len(location_and_documents[1]) > 0:
+                    print("\nResults:")
+                    for i in range(0, len(location_and_documents[1])):
+                        location_and_documents[1][i].encode("utf-8", "ignore")
+
+                        # NOTE: this is yielding an encoding error
+                        try:
+                            print("\t{0}".format(location_and_documents[1][i]))
+                        except Exception as e:
+                            x = 2 # dummy code
+                else:
+                    print("\nThere are no relevant results.")
 
             elif from_user == "2":
                 print("Goodbye.")
@@ -114,4 +172,5 @@ if __name__ == "__main__":
         """
 
     except Exception as e:
-        raise()
+        x = 2
+        #raise()
