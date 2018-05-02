@@ -1,4 +1,7 @@
 import math, os
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+from re import sub as re_sub
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 
@@ -41,6 +44,7 @@ class Query:
 
 def debugPrint(query: Query, vsm: VSMClass, iic: InvertedIndexClass):
 
+    """
     print("\n\nInverted Index:")
     for term, index in iic.inverted_index.items():
         print(end="" "{ %s , %s , %s } " % (index.term, len(index.docID_list), index.term_tf) )
@@ -74,14 +78,13 @@ def debugPrint(query: Query, vsm: VSMClass, iic: InvertedIndexClass):
 
         print()
 
-    #"""
     print("\n\nDocument Lengths")
     for i in range(0, len(vsm.document_vectors)):
-        """doc = vsm.document_vectors[i]
+        doc = vsm.document_vectors[i]
         print(end='' "\t[ %s" % (str(doc[0])))
         for j in range(1,len(doc)):
             print(end='' ", %s" % (str(doc[j])))
-        print("] == |%s|" % (vsm.document_lengths[i][1]))"""
+        print("] == |%s|" % (vsm.document_lengths[i][1])) #
         print("\t[...] == |%s|" % (vsm.document_lengths[i][1]))
     #"""
 
@@ -99,23 +102,27 @@ def debugPrint(query: Query, vsm: VSMClass, iic: InvertedIndexClass):
 
 if __name__ == "__main__":
     try:
-        proc_doc_location = "../testdoc"
+        proc_doc_location = "../processed_docsnew"
+        #proc_doc_location = "../processed_testdoc"
+        #proc_doc_location = "../testdoc"
         iic = InvertedIndexClass()
         iic.createInvertedIndex(proc_doc_location)
         vsm = VSMClass(iic)
+        stemmer = PorterStemmer()
 
         query1 = ["silver", "truck"]
-        qr1 = Query(query1, vsm)
-        debugPrint(qr1, vsm, iic)
-
         query2 = ["damaged", "truck"]
-        qr2 = Query(query2, vsm)
-        debugPrint(qr2, vsm, iic)
+        query3 = ["acadia"]
+        queries = [query1, query2, query3]
+        for query in queries:
+            for i in range(0, len(query)):
+                #item = (re_sub(r"[^a-zA-Z0-9_ ]+", "", item.lower().strip())).split()
+                if query[i] not in stopwords.words("english"):
+                    query[i] = stemmer.stem(query[i])
+            qr = Query(query, vsm)
+            debugPrint(qr, vsm, iic)
+            #break
 
 
     except Exception as e:
         raise()
-
-        """
-        To implement the stemmer and stopper, Python provides easily available stemmers and stoppers libraries that can be imported, created by the Natural Language Toolkit (NLTK). Each processed file is output to a new corresponding processed file. Once the file has been processed, each word is added to the dictionary array as a tuple containing the word and its document frequency, with a pointer to the posting list object that contains the document number, frequency, and a pointer to the next object, creating a linked list. After document preprocessing is done, the dictionary data is used to calculate the TF-IDF based ranking for each document. We are currently working on comparing the query and document vectors efficiently, and determining which data structures would be most beneficial to hold the vectors and inverted index.
-        """
