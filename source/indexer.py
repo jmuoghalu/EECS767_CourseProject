@@ -63,6 +63,7 @@ class InvertedIndex:
                             self.inverted_index[r].term_tf += 1 # Note: this is the sum of the posting list entries' TF values
 
                         read_from_file = (re_sub(r"[^a-zA-Z0-9_ ]+", "", curr_file.read().lower())).split()
+                    curr_file.close()
                     current_docID += 1
 
             # set all term IDF's
@@ -71,23 +72,8 @@ class InvertedIndex:
 
             self.inverted_index = OrderedDict(sorted(self.inverted_index.items(), key=lambda t: t[0])) # sort the inverted index
 
+            # save the inverted index to a text file
             iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
-
-            """ OUTPUT FOR DEBUGGING
-            for term, index in self.inverted_index.items():
-                print(end="" "{ %s , %s , %s } " % (index.term, len(index.docID_list), index.term_tf) )
-                first = True
-                if len(index.term) < 4:
-                    print(end="" "\t")
-                print(end="" "\t\t -> ")
-
-                for docID, TF in index.posting_list.items():
-                    if not first:
-                        print(end="" " -> ")
-                    print(end="" "[%s | %s]" % (docID, TF))
-                    first = False
-                print("")
-            #"""
             iid_file = open(iid_file_name, "w", encoding="UTF8")
             for docInfo in self.document_list: # [[docName, docID]]:
                 iid_file.write("D%s:\t\t%s\n" % (docInfo[1], docInfo[0]))
@@ -116,7 +102,7 @@ class InvertedIndex:
             raise
 
 
-    # after calling createInvertedIndex, the inverted index has now been sorted and can be written to file
+    # after calling createInvertedIndex, the inverted index has now been sorted and written to file
     def loadInvertedIndex(self, proc_doc_location):
         if not proc_doc_location[len(proc_doc_location)-1] == '/':
             proc_doc_location += "/"
@@ -124,5 +110,9 @@ class InvertedIndex:
         if not os.path.exists(proc_doc_location):
             print("The Input Directory Does Not Exist")
             return
+
+        iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
+        iid_file = None
+        iid_file = open(iid_file_name, "r", encoding="UTF8")
 
         # This function is incomplete

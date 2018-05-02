@@ -8,6 +8,7 @@ from indexer import InvertedIndex as InvertedIndexClass
 
 class VectorSpaceModel:
     def __init__(self, iic: InvertedIndexClass):
+        self.iic = iic
         self.terms_idf = {} # {term: IDF}
         self.terms_weights = {} # {term: [weights]}
         self.document_vectors = {} # [[docID: [weights]] # THIS VARIABLE DOES NOT NEED TO BE FILLED

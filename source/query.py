@@ -36,3 +36,13 @@ class Query:
 
         # lastly, sort the similarities
         self.all_similarities = sorted(self.all_similarities, key=lambda l:l[1], reverse=True)
+
+        # drop the similarities if they == 0
+        i = 0
+        updated_similarities = []
+        while not (i == (len(self.all_similarities))):
+            if self.all_similarities[i][1] == 0:
+                break
+            updated_similarities.append(self.all_similarities[i])
+            i += 1
+        self.all_similarities = updated_similarities

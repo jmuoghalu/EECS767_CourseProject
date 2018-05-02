@@ -5,6 +5,7 @@ from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
+import sys
 
 def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
 
@@ -55,10 +56,10 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
     #"""
     print("\n\nQuery")
     print("Terms: %s" % (query.query_vector.keys()))
-    print(end='' "Result: [D%s, %s]" %
+    print(end='' "Result:\n\t[D%s,\t%s]" %
         (query.all_similarities[0][0], query.all_similarities[0][1]))
     for i in range(1, len(query.all_similarities)):
-        print(end='' ",\n[D%s, %s]" %
+        print(end='' ",\n\t[D%s,\t%s]" %
             (query.all_similarities[i][0], query.all_similarities[i][1]))
     #"""
     print("\n\n")
@@ -66,35 +67,50 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
 
 if __name__ == "__main__":
     try:
-        doc_basename = "docsnew" # the actual name of the folder containing the processed files
-        #doc_basename = "testdoc" # the actual name of the folder containing the processed files
+        #doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        doc_basename = "testdoc" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         #dp = DPClass()
         #dp.runDocProc(doc_location)
         iic = InvertedIndexClass()
         iic.createInvertedIndex(doc_location)
+        iic.loadInvertedIndex(doc_location)
         vsm = VSMClass(iic)
         stemmer = PorterStemmer()
 
-        query1 = ["silver", "truck"]
-        query2 = ["damaged", "truck"]
-        query3 = ["acadia"]
-        queries = [query1, query2, query3]
-        for query in queries:
-            for i in range(0, len(query)):
-                #item = (re_sub(r"[^a-zA-Z0-9_ ]+", "", item.lower().strip())).split()
-                if query[i] not in stopwords.words("english"):
-                    query[i] = stemmer.stem(query[i])
-            qr = QueryClass(query, vsm)
-            debugPrint(qr, vsm, iic)
-            break
+        continueLoop = True
+        fromUser = ""
+
+        print("Welcome to the Search Engine\n")
+        while continueLoop:
+            print("Select from the Following Options:\n\t1.) Search\n\t2.) Exit")
+            from_user = input("Your Choice: ")
+
+            if from_user == "1":
+                # NOTE: this function is raw_input for Python 2.x
+                print("\nSearching through the ''{0}'' File Cache:".format(doc_basename))
+                user_query = input("What Is Your Query?:  ")
+                formatted_query = (re_sub(r"[^a-zA-Z0-9_ ]+", "", user_query.lower().strip())).split()
+                query = []
+                for i in range(0, len(formatted_query)):
+                    if formatted_query[i] not in stopwords.words("english"):
+                        query.append(stemmer.stem(formatted_query[i]))
+
+                qr = QueryClass(query, vsm)
+                debugPrint(qr, vsm, iic)
+
+            elif from_user == "2":
+                print("Goodbye.")
+                break
+
+            else:
+                print("\nInvalid Input.")
+
 
         """
             # TODO:
-                1.) terminal I/O for user strings
-                2.) create runQuery function which will pass the user's strings, run them through the stop list and stemmer, and use them to create the QueryClass object
-                3.) take the sorted similarity list, retrieve the document ID's, use the ID's to get the document basenames, and use the basenames to retrieve pages from the document source folder (NOT THE PROCESSED FOLDER)
+                1.) take the sorted similarity list, retrieve the document ID's, use the ID's to get the document basenames, and use the basenames to retrieve pages from the document source folder (NOT THE PROCESSED FOLDER)
         """
 
     except Exception as e:
