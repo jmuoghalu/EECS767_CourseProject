@@ -1,0 +1,11 @@
+.jumbotron {
+    margin-bottom: 0px;
+}
+
+html, body {
+    height: 100%;
+}
+
+.container {
+    margin: 10px
+}
