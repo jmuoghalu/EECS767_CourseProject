@@ -151,11 +151,7 @@ if __name__ == "__main__":
         if len(location_and_documents[1]) > 0:
             print("\nResults:")
             for i in range(0, len(location_and_documents[1])):
-                #location_and_documents[1][i].encode("utf-8", "ignore")
-                #location_and_documents[2][i].encode("utf-8", "ignore")
-                #location_and_documents[3][i].encode("utf-8", "ignore")
-
-                # NOTE: this is yielding an encoding error
+                # NOTE: this might be yielding an encoding error
                 try:
                     print("\t\tName:\t{0}".format(location_and_documents[1][i]))
                     print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
@@ -163,6 +159,7 @@ if __name__ == "__main__":
                     print("")
                 except Exception as e:
                     print("Encoding Error")
+
         else:
             print("\nThere are no relevant results.")
 
