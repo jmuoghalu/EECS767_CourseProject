@@ -49,6 +49,6 @@ class Query:
         while not (i == (len(self.all_similarities))):
             if self.all_similarities[i][1] == 0:
                 break
-            updated_similarities.append(self.all_similarities[i])
+            updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
             i += 1
-        self.all_similarities = updated_similarities
+        self.all_similarities = updated_similarities[0:10]
