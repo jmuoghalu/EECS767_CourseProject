@@ -64,8 +64,7 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
     #"""
     print("\n\n")
 
-def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location):
-
+def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_terms):
     if not proc_doc_location[len(proc_doc_location)-1] == '/':
         proc_doc_location += "/"
 
@@ -87,17 +86,21 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location):
                     most_similar_documents.append(doc[0])
                     doc_list_copy.remove(doc)
 
+        document_titles = ["" for i in range(0, len(most_similar_documents))]
+        document_snapshots = ["" for i in range(0, len(most_similar_documents))] # the first appearance of the query
         for root, dirs, files in os.walk(unprocessed_location):
             for i in range(0, len(most_similar_documents)):
                 name = most_similar_documents[i]
                 for f in files:
+                    # search directory for file name without extension
+                    # take the file, and replace the index with it
                     if name == os.path.splitext(f)[0]:
+                        document_titles[i] = dp.retrieveDocTitle(unprocessed_location + "/" + f)
+                        document_snapshots[i] = dp.retrieveDocSnapshot(unprocessed_location + "/" + f, query_terms)
                         most_similar_documents[i] = f
             break
-            # search directory for file name without extension
-            # take the file, and replace the index with it
 
-        return [unprocessed_location, most_similar_documents]
+        return [unprocessed_location, most_similar_documents, document_titles, document_snapshots]
 
     except Exception as e:
         raise()
@@ -110,16 +113,10 @@ if __name__ == "__main__":
         #doc_basename = "testdoc" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
-        #dp = DPClass()
-        #dp.runDocProc(doc_location)
+        dp = DPClass()
         iic = InvertedIndexClass()
-        iic.createInvertedIndex(doc_location)
         iic.loadInvertedIndex(doc_location)
-
         vsm = VSMClass(iic, doc_basename)
-        vsm.createEntireModel(iic)
-        #vsm.computeDocLengths()
-
         stemmer = PorterStemmer()
 
         continueLoop = True
@@ -143,18 +140,19 @@ if __name__ == "__main__":
                 qr = QueryClass(query, vsm)
 
                 # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0
-                location_and_documents = getDocuments(qr.all_similarities, iic, doc_location)
+                location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)
 
                 if len(location_and_documents[1]) > 0:
                     print("\nResults:")
                     for i in range(0, len(location_and_documents[1])):
-                        location_and_documents[1][i].encode("utf-8", "ignore")
-
-                        # NOTE: this is yielding an encoding error
+                        # NOTE: this might be yielding an encoding error
                         try:
-                            print("\t{0}".format(location_and_documents[1][i]))
+                            print("\t\tName:\t{0}".format(location_and_documents[1][i]))
+                            print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
+                            print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
+                            print("")
                         except Exception as e:
-                            x = 2 # dummy code
+                            print("Encoding Error")
                 else:
                     print("\nThere are no relevant results.")
 
@@ -166,11 +164,5 @@ if __name__ == "__main__":
                 print("\nInvalid Input.")
 
 
-        """
-            # TODO:
-                1.) take the sorted similarity list, retrieve the document ID's, use the ID's to get the document basenames, and use the basenames to retrieve pages from the document source folder (NOT THE PROCESSED FOLDER)
-        """
-
     except Exception as e:
-        x = 2
-        #raise()
+        raise()

@@ -12,7 +12,7 @@ def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
     """
     print("\n\nInverted Index:")
     for term, index in iic.inverted_index.items():
-        print(end="" "{ %s , %s , %s } " % (index.term, len(index.docID_list), index.term_tf) )
+        print(end="" "{ %s , %s , %s } " % (index.term, index.term_df, index.term_tf) )
         first = True
         if len(index.term) < 4:
             print(end="" "\t")
@@ -112,10 +112,10 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
 
 if __name__ == "__main__":
     try:
-        #doc_basename = "docsnew" # the actual name of the folder containing the processed files
-        #doc_location = "../file_cache/processed/" + doc_basename
-        doc_basename = "testdoc" # the actual name of the folder containing the processed files
-        doc_location = "../file_cache/unprocessed/" + doc_basename
+        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        doc_location = "../file_cache/processed/" + doc_basename
+        #doc_basename = "testdoc" # the actual name of the folder containing the processed files
+        #doc_location = "../file_cache/unprocessed/" + doc_basename
 
         dp = DPClass()
         #dp.runDocProc(doc_location)
@@ -124,12 +124,12 @@ if __name__ == "__main__":
         iic.loadInvertedIndex(doc_location)
 
         vsm = VSMClass(iic, doc_basename)
-        vsm.createEntireModel(iic)
+        #vsm.createEntireModel()
         #vsm.computeDocLengths()
 
         stemmer = PorterStemmer()
 
-        """
+
         if len(sys.argv) < 2:
             print("You Need to Give a Search Term")
             sys.exit()
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
         else:
             print("\nThere are no relevant results.")
-        """
+
 
     except Exception as e:
         raise()

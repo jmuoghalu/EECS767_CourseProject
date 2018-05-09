@@ -14,7 +14,7 @@ class InvertedIndex:
             self.term_idf = 0
             self.term_df = 0
             self.term_tf = 0
-            self.posting_list = {} # [docID: docTF]
+            self.posting_list = {} # {docID: docTF}
 
 
     def createInvertedIndex(self, proc_doc_location):
@@ -174,7 +174,7 @@ class InvertedIndex:
 
                             read_from_file = file.readline().strip()
                             docLen = float(read_from_file.split(":\t")[1])
-                            self.document_lengths.append(docLen)
+                            self.document_lengths.append([docID, docLen])
 
 
                 read_from_file = file.readline()
