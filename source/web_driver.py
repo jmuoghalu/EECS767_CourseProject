@@ -81,12 +81,14 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
             # similarities = [[docID, query-doc similarity]]
             # iic.document_list = [[docName, docID]]
 
-        doc_list_copy = iic.document_list
+        doc_list_already_checked = [False for i in range(len(iic.document_list))]
         for cs in similarities:
-            for doc in doc_list_copy:
-                if cs[0] == doc[1]:
-                    most_similar_documents.append(doc[0])
-                    doc_list_copy.remove(doc)
+            for i in range(len(iic.document_list)):
+                doc = iic.document_list[i]
+                if not doc_list_already_checked[i]:
+                    if cs[0] == doc[1]:
+                        most_similar_documents.append(doc[0])
+                        doc_list_already_checked[i] = True
 
         document_titles = ["" for i in range(0, len(most_similar_documents))]
         document_snapshots = ["" for i in range(0, len(most_similar_documents))] # the first appearance of the query
