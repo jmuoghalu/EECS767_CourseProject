@@ -14,12 +14,16 @@ class Query:
 
         # query_terms = [terms]
         # to shorten the query vector, only add the weights for terms that appear in the query
-        for qt in query_terms:
+        for i in range(len(query_terms)):
+            qt = query_terms[i]
+            qt_in_index = False
             # make sure the word actually exists within the vector model and inverted index
             if not (qt in self.vsm.terms_weights):
-                self.vsm.createModelRow(qt)
+                qt_in_index = self.vsm.createModelRow(qt)
+            else:
+                qt_in_index = True # this term is in the index, and the weights have already been calculated
 
-            if qt in self.vsm.terms_weights:
+            if qt_in_index:
                 qt_idf = self.vsm.terms_idf[qt]
                 self.query_vector[qt] = qt_idf
                 self.query_length += qt_idf*qt_idf
@@ -27,6 +31,7 @@ class Query:
         # finish computing the query length
         self.query_length = float("{0:.3f}".format(math.sqrt(self.query_length)))
 
+    def computeSimilarities(self):
         # populate the list of similarities, which is ordered by the dataset's docID's
         for qv, qv_idf in self.query_vector.items():
             # retreive the list of all tf-idf weights for the current query
@@ -49,6 +54,6 @@ class Query:
         while not (i == (len(self.all_similarities))):
             if self.all_similarities[i][1] == 0:
                 break
-            updated_similarities.append(self.all_similarities[i])
+            updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
             i += 1
-        self.all_similarities = updated_similarities
+        self.all_similarities = updated_similarities[0:10]
