@@ -1,24 +1,18 @@
 BEGIN TERMS
 
-Term:	a
-	DF:	3	|||	TF:	3	|||	IDF:	0.125
-	Posting List: (docID,docTF)
-		1,1		2,1		3,1		
-
-
-Term:	arrived
+Term:	arriv
 	DF:	3	|||	TF:	3	|||	IDF:	0.125
 	Posting List: (docID,docTF)
 		2,1		3,1		4,1		
 
 
-Term:	damaged
+Term:	damag
 	DF:	2	|||	TF:	2	|||	IDF:	0.301
 	Posting List: (docID,docTF)
 		1,1		4,1		
 
 
-Term:	delivery
+Term:	deliveri
 	DF:	1	|||	TF:	1	|||	IDF:	0.602
 	Posting List: (docID,docTF)
 		2,1		
@@ -34,18 +28,6 @@ Term:	gold
 	DF:	2	|||	TF:	2	|||	IDF:	0.301
 	Posting List: (docID,docTF)
 		1,1		3,1		
-
-
-Term:	in
-	DF:	3	|||	TF:	3	|||	IDF:	0.125
-	Posting List: (docID,docTF)
-		1,1		2,1		3,1		
-
-
-Term:	of
-	DF:	3	|||	TF:	3	|||	IDF:	0.125
-	Posting List: (docID,docTF)
-		1,1		2,1		3,1		
 
 
 Term:	shipment
@@ -74,13 +56,13 @@ BEGIN DOCUMENTS
 
 
 D1:	D1
-	Length:	0.825
+	Length:	0.796
 
 D2:	D2
-	Length:	1.375
+	Length:	1.358
 
 D3:	D3
-	Length:	0.509
+	Length:	0.461
 
 D4:	D4
 	Length:	0.349

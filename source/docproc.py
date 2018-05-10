@@ -56,7 +56,9 @@ class DocProcessor(HTMLParser):
         elif (not self.in_script) and (not self.in_cite) and (not self.in_span) and (not self.not_in_processing):
             data_list = (re_sub(r"[^a-zA-Z0-9_ ]+", "", data.lower().strip())).split()
                 # re.sub = remove non alphanumeric characters from the string; NOTE: this alters the format of hyperlinks
-            rm_dl_stopwords = [dl for dl in data_list if dl not in stopwords.words("english")]
+
+            # do not add raw numbers to the token stream
+            rm_dl_stopwords = [dl for dl in data_list if (dl not in stopwords.words("english")) and (not dl.isdigit())]
             stemmed_list = [self.stemmer.stem(dl) for dl in rm_dl_stopwords]
 
             if len(stemmed_list) > 0:
@@ -79,7 +81,7 @@ class DocProcessor(HTMLParser):
 
             for root, dirs, files in os.walk(in_file_location):
                 proc_location = "../file_cache/processed/" + os.path.basename(os.path.dirname(root)) + "/"
-                print("proc_location: %s" % proc_location)
+                #print("proc_location: %s" % proc_location)
                 if not os.path.exists(proc_location):
                     os.makedirs(proc_location)
 
