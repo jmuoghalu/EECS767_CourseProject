@@ -111,8 +111,9 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
 
 if __name__ == "__main__":
     try:
-        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        #doc_basename = "docsnew" # the actual name of the folder containing the processed files
         #doc_basename = "testdoc" # the actual name of the folder containing the processed files
+        doc_basename = "practicedoc" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
@@ -122,6 +123,7 @@ if __name__ == "__main__":
         #iic.createInvertedIndex("../file_cache/processed/testdoc")
         iic.loadInvertedIndex(doc_location)
         vsm = VSMClass(iic, doc_basename)
+        vsm.createEntireModel()
         stemmer = PorterStemmer()
 
         continueLoop = True
@@ -140,28 +142,81 @@ if __name__ == "__main__":
                 formatted_query = (re_sub(r"[^a-zA-Z0-9_ ]+", "", user_query.lower().strip())).split()
                 query = []
                 for i in range(0, len(formatted_query)):
-                    if formatted_query[i] not in stopwords.words("english"):
-                        query.append(stemmer.stem(formatted_query[i]))
+                    #if formatted_query[i] not in stopwords.words("english"):
+                    query.append(stemmer.stem(formatted_query[i]))
 
                 qr = QueryClass(query, vsm)
                 qr.computeSimilarities()
 
-                # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0
+                # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0; third = document titles; fourth = snapshot paragraph
+                # [unprocessed_location, most_similar_documents, document_titles, document_snapshots]
                 location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)
-
                 if len(location_and_documents[1]) > 0:
                     print("\nResults:")
                     for i in range(0, len(location_and_documents[1])):
                         # NOTE: this might be yielding an encoding error
                         try:
+                            print("\tDocument {0}:".format(i+1))
                             print("\t\tName:\t{0}".format(location_and_documents[1][i]))
                             print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
                             print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
                             print("")
                         except Exception as e:
                             print("Encoding Error")
+
+                    valid_input = False
+                    relevant = rel_and_irrel = None
+                    while not valid_input:
+                        relevant = input("Which Documents Are Relevant (1-{0}): ".format(len(location_and_documents[1]))).strip().split()
+                        valid_input = True
+                        for i in range(len(relevant)):
+                            if relevant[i].isdigit():
+                                x = relevant[i] = int(relevant[i])
+                                if (x < 1) or (x > len(location_and_documents[1])):
+                                    valid_input = False
+                                    print("\nInvalid Input\n")
+                                    break
+                            else:
+                                valid_input = False
+                                print("\nYou Must Provide Numbers As Input\n")
+                                break
+
+                    print("Relevant Selection:\t", end='')
+                    print(relevant)
+                    rel_and_irrel = [False for i in range(len(location_and_documents[1]))]
+                    print("Relevant Documents:\t", end='')
+                    for i in range(len(relevant)):
+                        rel_and_irrel[relevant[i]-1] = True
+                        print(location_and_documents[1][relevant[i]-1], end='')
+                    print()
+
+                    qr.relevanceFeedback(rel_and_irrel)
+                    qr.computeSimilarities()
+                    print("All Similarities:\t{0}".format(qr.all_similarities))
+                    location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)
+                    if len(location_and_documents[1]) > 0:
+                        print("\nUpdated Results:")
+                        for i in range(0, len(location_and_documents[1])):
+                            # NOTE: this might be yielding an encoding error
+                            try:
+                                print("\tDocument {0}:".format(i+1))
+                                print("\t\tName:\t{0}".format(location_and_documents[1][i]))
+                                print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
+                                print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
+                                print("")
+                            except Exception as e:
+                                print("Encoding Error")
+
+                    else:
+                        print("\nThere are no relevant results.")
+
+
                 else:
                     print("\nThere are no relevant results.")
+
+                # recreate the vector model for the next query
+                vsm = VSMClass(iic, doc_basename)
+                vsm.createEntireModel()
 
             elif from_user == "2":
                 print("Goodbye.")

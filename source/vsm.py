@@ -11,13 +11,17 @@ class VectorSpaceModel:
         self.iic = iic
         self.terms_idf = {} # {term: IDF}
         self.terms_weights = {} # {term: [weights]}
-        self.document_vectors = {} # [[docID: [weights]] # THIS VARIABLE DOES NOT NEED TO BE FILLED
+        # THIS VARIABLE IS ONLY FILLED WHEN THE createEntireModel FUNCTION IS cALLED
+        self.document_vectors = {} # {docID: [weights]}
         self.document_lengths = iic.document_lengths
         self.index_basename = index_basename
 
     def createEntireModel(self):
         # for all of the inverted index terms and their posting lists, calculate the IDF values and the weights
         # Note: the inverted_index is sorted alphabetically after its creation
+        for doc in self.iic.document_list:
+            self.document_vectors[doc[1]-1] = [0 for i in range(len(self.iic.inverted_index.values()))]
+
         doc_vec_index = 0
         for term,entry in self.iic.inverted_index.items():
             # calculate and save the IDF value for this term

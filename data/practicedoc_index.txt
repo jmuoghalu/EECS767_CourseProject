@@ -1,0 +1,71 @@
+BEGIN TERMS
+
+Term:	be
+	DF:	4	|||	TF:	6	|||	IDF:	0.0
+	Posting List: (docID,docTF)
+		1,1		2,2		3,1		4,2		
+
+
+Term:	is
+	DF:	1	|||	TF:	1	|||	IDF:	0.602
+	Posting List: (docID,docTF)
+		4,1		
+
+
+Term:	not
+	DF:	2	|||	TF:	2	|||	IDF:	0.301
+	Posting List: (docID,docTF)
+		2,1		4,1		
+
+
+Term:	or
+	DF:	1	|||	TF:	1	|||	IDF:	0.602
+	Posting List: (docID,docTF)
+		4,1		
+
+
+Term:	question
+	DF:	2	|||	TF:	2	|||	IDF:	0.301
+	Posting List: (docID,docTF)
+		3,1		4,1		
+
+
+Term:	that
+	DF:	2	|||	TF:	2	|||	IDF:	0.301
+	Posting List: (docID,docTF)
+		3,1		4,1		
+
+
+Term:	the
+	DF:	2	|||	TF:	2	|||	IDF:	0.301
+	Posting List: (docID,docTF)
+		3,1		4,1		
+
+
+Term:	to
+	DF:	3	|||	TF:	4	|||	IDF:	0.125
+	Posting List: (docID,docTF)
+		1,1		2,1		4,2		
+
+
+
+END TERMS
+
+
+BEGIN DOCUMENTS
+
+
+D1:	D1
+	Length:	0.125
+
+D2:	D2
+	Length:	0.326
+
+D3:	D3
+	Length:	0.521
+
+D4:	D4
+	Length:	1.072
+
+
+END DOCUMENTS
