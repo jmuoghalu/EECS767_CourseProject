@@ -79,12 +79,14 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
             # similarities = [[docID, query-doc similarity]]
             # iic.document_list = [[docName, docID]]
 
-        doc_list_copy = iic.document_list
+        doc_list_already_checked = [False for i in range(len(iic.document_list))]
         for cs in similarities:
-            for doc in doc_list_copy:
-                if cs[0] == doc[1]:
-                    most_similar_documents.append(doc[0])
-                    doc_list_copy.remove(doc)
+            for i in range(len(iic.document_list)):
+                doc = iic.document_list[i]
+                if not doc_list_already_checked[i]:
+                    if cs[0] == doc[1]:
+                        most_similar_documents.append(doc[0])
+                        doc_list_already_checked[i] = True
 
         document_titles = ["" for i in range(0, len(most_similar_documents))]
         document_snapshots = ["" for i in range(0, len(most_similar_documents))] # the first appearance of the query
@@ -114,16 +116,20 @@ if __name__ == "__main__":
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
+        #dp.runDocProc("../file_cache/unprocessed/" + doc_basename)
         iic = InvertedIndexClass()
+        #iic.createInvertedIndex("../file_cache/processed/docsnew")
+        #iic.createInvertedIndex("../file_cache/processed/testdoc")
         iic.loadInvertedIndex(doc_location)
         vsm = VSMClass(iic, doc_basename)
         stemmer = PorterStemmer()
 
         continueLoop = True
-        fromUser = ""
 
         print("Welcome to the Search Engine\n")
         while continueLoop:
+            fromUser = ""
+            user_query = ""
             print("\n\nSelect from the Following Options:\n\t1.) Search\n\t2.) Exit")
             from_user = input("Your Choice: ")
 
@@ -138,6 +144,7 @@ if __name__ == "__main__":
                         query.append(stemmer.stem(formatted_query[i]))
 
                 qr = QueryClass(query, vsm)
+                qr.computeSimilarities()
 
                 # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0
                 location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)
@@ -162,7 +169,6 @@ if __name__ == "__main__":
 
             else:
                 print("\nInvalid Input.")
-
 
     except Exception as e:
         raise()

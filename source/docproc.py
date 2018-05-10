@@ -110,11 +110,11 @@ class DocProcessor(HTMLParser):
 
 
     def retrieveDocTitle(self, full_file_name):
+        file = open(full_file_name, "r", encoding="UTF8")
         try:
             self.not_in_processing = True
             self.current_doc_title = ""
             ret = ""
-            file = open(full_file_name, "r", encoding="UTF8")
             for read_from_file in file:
                 self.feed(read_from_file.strip())
                 if not (self.current_doc_title == ""):
@@ -124,15 +124,15 @@ class DocProcessor(HTMLParser):
             self.in_title = self.in_body = self.in_para = self.in_script = self.in_cite = self.in_span = False
             return ret
         except Exception as e:
-            raise()
+            file.close()
 
 
     def retrieveDocSnapshot(self, full_file_name, query_terms):
+        file = open(full_file_name, "r")
         try:
             self.not_in_processing = True
             ret = ""
 
-            file = open(full_file_name, "r")
             for read_from_file in file:
                 self.feed(read_from_file.strip())
 
@@ -147,7 +147,6 @@ class DocProcessor(HTMLParser):
                     ret = self.current_line
                     #if not (set(stem_llw).isdisjoint(query_terms)):
                     if not self.in_para:
-                        file.close()
                         break
 
             self.current_line = ""
@@ -155,4 +154,4 @@ class DocProcessor(HTMLParser):
             file.close()
             return ret
         except Exception as e:
-            x = 2
+            file.close()

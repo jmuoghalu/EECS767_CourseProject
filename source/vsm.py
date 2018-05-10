@@ -43,7 +43,7 @@ class VectorSpaceModel:
         try:
             entry = self.iic.inverted_index[which_term]
         except KeyError: # the parameter term does not exist in the inverted index
-            return
+            return False
 
         # calculate and save the IDF value for this term
         self.terms_idf[which_term] = entry.term_idf
@@ -55,3 +55,5 @@ class VectorSpaceModel:
         for docID, TF in entry.posting_list.items():
             # ex.) document #1 is located at index 0 in the terms_weights value list
             self.terms_weights[which_term][(docID-1)] = entry.term_idf * TF
+
+        return True
