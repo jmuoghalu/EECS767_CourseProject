@@ -1,5 +1,5 @@
-from nltk.stem.porter import PorterStemmer
-from nltk.corpus import stopwords
+from nltk_source.stem.porter import PorterStemmer
+from nltk_source.corpus import stopwords
 from re import sub as re_sub
 from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
@@ -111,16 +111,14 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
 
 if __name__ == "__main__":
     try:
-        doc_basename = "docsnew" # the actual name of the folder containing the processed files
-        #doc_basename = "testdoc" # the actual name of the folder containing the processed files
+        doc_basename = "Quotes" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
         #dp.runDocProc("../file_cache/unprocessed/" + doc_basename)
         iic = InvertedIndexClass()
-        #iic.createInvertedIndex("../file_cache/processed/docsnew")
-        #iic.createInvertedIndex("../file_cache/processed/testdoc")
-        iic.loadInvertedIndex(doc_location)
+        #iic.createInvertedIndex("../file_cache/processed/" + doc_basename)
+        iic.loadInvertedIndex("../file_cache/processed/" + doc_basename)
         vsm = VSMClass(iic, doc_basename)
         stemmer = PorterStemmer()
 

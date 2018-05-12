@@ -15355,9 +15355,15 @@ Term:	rigid
 
 
 Term:	ring
-	DF:	1	|||	TF:	5	|||	IDF:	2.301
+	DF:	1	|||	TF:	4	|||	IDF:	2.301
 	Posting List: (docID,docTF)
-		27,5		
+		27,4		
+
+
+Term:	ringstolkien
+	DF:	1	|||	TF:	1	|||	IDF:	2.301
+	Posting List: (docID,docTF)
+		27,1		
 
 
 Term:	rise
@@ -18187,9 +18193,9 @@ Term:	toler
 
 
 Term:	tolkien
-	DF:	1	|||	TF:	15	|||	IDF:	2.301
+	DF:	1	|||	TF:	14	|||	IDF:	2.301
 	Posting List: (docID,docTF)
-		27,15		
+		27,14		
 
 
 Term:	toll
@@ -20006,7 +20012,7 @@ D26:	http%3A%2F%2Fquotes%2Etoscrape%2Ecom%2Fauthor%2FJ-M-Barrie
 	Length:	21.238
 
 D27:	http%3A%2F%2Fquotes%2Etoscrape%2Ecom%2Fauthor%2FJ-R-R-Tolkien
-	Length:	49.564
+	Length:	47.546
 
 D28:	http%3A%2F%2Fquotes%2Etoscrape%2Ecom%2Fauthor%2FJames-Baldwin
 	Length:	33.128

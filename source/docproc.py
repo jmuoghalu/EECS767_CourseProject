@@ -1,8 +1,8 @@
 import os
 from html.parser import HTMLParser
 from html.entities import name2codepoint
-from nltk.stem.porter import PorterStemmer
-from nltk.corpus import stopwords
+from nltk_source.stem.porter import PorterStemmer
+from nltk_source.corpus import stopwords
 from re import sub as re_sub
 
 class DocProcessor(HTMLParser):
@@ -95,10 +95,7 @@ class DocProcessor(HTMLParser):
                     curr_file = open((in_file_location + f), "r", encoding="UTF8")
                     self.out_file = open((proc_location + out_name + ".txt"), "w", encoding="UTF8")
 
-                    read_from_file = curr_file.readline()
-                    while(read_from_file):
-                        self.feed(read_from_file)
-                        read_from_file = curr_file.readline() # the docsnew files have each tag written in one line
+                    self.feed(curr_file.read())
 
                     curr_file.close()
                     self.out_file.close()
@@ -106,7 +103,7 @@ class DocProcessor(HTMLParser):
             return proc_location
 
         except Exception as e:
-            x = 2
+            raise()
 
 
     def retrieveDocTitle(self, full_file_name):
