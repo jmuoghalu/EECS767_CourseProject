@@ -6,7 +6,7 @@ class InvertedIndex:
     def __init__(self):
         self.inverted_index = {} # {term: IndexEntry}
         self.document_list = [] # [[docName, docID]] # using a list instead of a dictionary to preserve ordering by docID
-        self.document_lengths = []  #  ordered by docID
+        self.document_lengths = []  #  ordered by docID; [docId, docLength]
 
     class IndexEntry:
         def __init__(self):
@@ -21,6 +21,7 @@ class InvertedIndex:
         try:
             self.inverted_index = {}
             self.document_list = []
+            self.document_lengths = []
             current_docID = 1
 
             if not proc_doc_location[len(proc_doc_location)-1] == '/':
@@ -78,7 +79,7 @@ class InvertedIndex:
             # save the inverted index to a text file
             iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
             iid_file = open(iid_file_name, "w", encoding="UTF8")
-            self.document_lengths = [0 for i in range(len(self.document_list))]
+            self.document_lengths = [[i+1,0] for i in range(len(self.document_list))]
 
             iid_file.write("BEGIN TERMS\n\n")
             for term, entry in self.inverted_index.items():
@@ -92,7 +93,7 @@ class InvertedIndex:
                 docIDandTF_line = ""
                 #weight_line = ""
                 for docID, TF in entry.posting_list.items():
-                    self.document_lengths[docID-1] += (entry.term_idf*TF)*(entry.term_idf*TF)
+                    self.document_lengths[docID-1][1] += (entry.term_idf*TF)*(entry.term_idf*TF)
                     docIDandTF_line += "{0},{1}\t\t".format(docID,TF)
                     #weight_line += "{0}\t\t".format(entry.term_idf*TF)
                 #iid_file.write("\t\t{0}\n\t\t{1}\n\n\n".format(docIDandTF_line, weight_line))
@@ -100,8 +101,8 @@ class InvertedIndex:
 
             iid_file.write("\nEND TERMS\n\n\nBEGIN DOCUMENTS\n\n\n")
             for docInfo in self.document_list: # [[docName, docID]]:
-                self.document_lengths[docInfo[1]-1] = float("{0:.3f}".format(math.sqrt(self.document_lengths[docInfo[1]-1])))
-                iid_file.write("D{0}:\t{1}\n\tLength:\t{2}\n\n".format(docInfo[1], docInfo[0], self.document_lengths[docInfo[1]-1]))
+                self.document_lengths[docInfo[1]-1][1] = float("{0:.3f}".format(math.sqrt(self.document_lengths[docInfo[1]-1][1])))
+                iid_file.write("D{0}:\t{1}\n\tLength:\t{2}\n\n".format(docInfo[1], docInfo[0], self.document_lengths[docInfo[1]-1][1]))
             iid_file.write("\nEND DOCUMENTS")
 
             iid_file.close()
@@ -126,6 +127,7 @@ class InvertedIndex:
         else:
             self.inverted_index = {}
             self.document_list = []
+            self.document_lengths = []
             file = open(iid_file_name, encoding="UTF8")
             reading_terms = reading_docs = False
 
