@@ -1,5 +1,5 @@
-from nltk.stem.porter import PorterStemmer
-from nltk.corpus import stopwords
+from nltk_source.stem.porter import PorterStemmer
+from nltk_source.corpus import stopwords
 from re import sub as re_sub
 from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
