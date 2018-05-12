@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os, re, urllib, urllib2, urlparse, robotparser
 from HTMLParser import HTMLParser
 from urlparse import urljoin
@@ -79,7 +81,7 @@ class mySpider(object):
         initdomain = "{uri.netloc}".format(uri=urlparse.urlparse(initial_url))
         print "domain is " + initdomain
         robot = robotparser.RobotFileParser()
-        robot.set_url("http://www." + initdomain + "/robots.txt")
+        robot.set_url("http://" + initdomain + "/robots.txt")
         print "check 1"
         robot.read()
         print "check 2"
@@ -113,8 +115,13 @@ class mySpider(object):
 
                 # Add links to will_crawl list if not visited already and if robots.txt says is polite
                 for url in links:
-                    if (url not in self.visted) and (url not in self.will_crawl) and (robot.can_fetch("*", url)):
-                        self.will_crawl.append(url)
+                    # print (robot.can_fetch("*", url))
+                    try:
+                        if (url not in self.visted) and (url not in self.will_crawl) and (robot.can_fetch("*", url)):
+                            self.will_crawl.append(url)
+                    except:
+                        self.visted.add(url)
+                        print "Some error occurred adding to frontier."
             except urllib2.HTTPError as e:
                 self.visted.add(url)
                 print(e)

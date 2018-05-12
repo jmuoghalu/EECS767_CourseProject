@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys, math
 from spider import mySpider
 
