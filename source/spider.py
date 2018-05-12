@@ -1,4 +1,4 @@
-import os, re, urllib, urllib2, urlparse
+import os, re, urllib, urllib2, urlparse, robotparser
 from HTMLParser import HTMLParser
 from urlparse import urljoin
 from urllib2 import urlopen
@@ -75,7 +75,16 @@ class mySpider(object):
         if initial_url[0:4] != "http":
             initial_url = "http://" + initial_url
 
-        self.will_crawl.append(initial_url)    # put initial_url to will_crawl list
+        # Add in check for robots.txt to insure it is polite
+        initdomain = "{uri.netloc}".format(uri=urlparse.urlparse(initial_url))
+        print "domain is " + initdomain
+        robot = robotparser.RobotFileParser()
+        robot.set_url("http://www." + initdomain + "/robots.txt")
+        print "check 1"
+        robot.read()
+        print "check 2"
+        if (robot.can_fetch("*", initial_url)):
+            self.will_crawl.append(initial_url)    # put initial_url to will_crawl list if allowed
 
         filenum = 1                         # initialize number of files downloaded
         directory = "Crawled/"
@@ -98,13 +107,13 @@ class mySpider(object):
                     filenum = filenum + 1           # keeps track of files downloaded if needed
                 except:
                     print "Filename too long"
-                    
+
                 links = self.parser.findLinks(url)    # parse url
                 self.visted.add(url)            # mark url as visted
 
-                # Add links to will_crawl list if not visited already
+                # Add links to will_crawl list if not visited already and if robots.txt says is polite
                 for url in links:
-                    if (url not in self.visted) and (url not in self.will_crawl):
+                    if (url not in self.visted) and (url not in self.will_crawl) and (robot.can_fetch("*", url)):
                         self.will_crawl.append(url)
             except urllib2.HTTPError as e:
                 self.visted.add(url)
