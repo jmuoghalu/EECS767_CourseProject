@@ -148,6 +148,7 @@ if __name__ == "__main__":
                 query.append(stemmer.stem(formatted_arguments[i]))
 
         qr = QueryClass(query, vsm)
+        qr.computeSimilarities()
 
         # first index = location of unprocessed documents; second index = list of document titles ; third index = list of documents in order of similarity > 0
         # if the list at index 1 is empty, then there are no similar documents
