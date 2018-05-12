@@ -114,7 +114,7 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
 
 if __name__ == "__main__":
     try:
-        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        doc_basename = "WikiWebCrawl" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
