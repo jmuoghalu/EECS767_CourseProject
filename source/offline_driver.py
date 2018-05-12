@@ -111,9 +111,9 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
 
 if __name__ == "__main__":
     try:
-        #doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        doc_basename = "docsnew" # the actual name of the folder containing the processed files
         #doc_basename = "testdoc" # the actual name of the folder containing the processed files
-        doc_basename = "practicedoc" # the actual name of the folder containing the processed files
+        #doc_basename = "practicedoc" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
@@ -181,18 +181,13 @@ if __name__ == "__main__":
                                 print("\nYou Must Provide Numbers As Input\n")
                                 break
 
-                    print("Relevant Selection:\t", end='')
-                    print(relevant)
+
                     rel_and_irrel = [False for i in range(len(location_and_documents[1]))]
-                    print("Relevant Documents:\t", end='')
                     for i in range(len(relevant)):
                         rel_and_irrel[relevant[i]-1] = True
-                        print(location_and_documents[1][relevant[i]-1], end='')
-                    print()
 
                     qr.relevanceFeedback(rel_and_irrel)
                     qr.computeSimilarities()
-                    print("All Similarities:\t{0}".format(qr.all_similarities))
                     location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)
                     if len(location_and_documents[1]) > 0:
                         print("\nUpdated Results:")

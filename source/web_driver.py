@@ -111,6 +111,16 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
 
 
 
+def WebDriverRelevanceFeedback(qr:QueryClass, iic:InvertedIndexClass, proc_doc_location, query_terms):
+    # if returning n results, initialize an n-sized list of booleans as true
+    rel_and_irrel = [False for i in range(len(location_and_documents[1]))]
+    # place the HTML checkboxes in a list
+        # checkboxes marked true means that the boolean at that index should be marked true
+
+    qr.relevanceFeedback(rel_and_irrel)
+    qr.computeSimilarities()
+    return getDocumentsWebDriver(qr, iic, proc_doc_location, query_terms)
+
 
 if __name__ == "__main__":
     try:
@@ -126,9 +136,7 @@ if __name__ == "__main__":
         iic.loadInvertedIndex(doc_location)
 
         vsm = VSMClass(iic, doc_basename)
-        #vsm.createEntireModel()
-        #vsm.computeDocLengths()
-
+        vsm.createEntireModel()
         stemmer = PorterStemmer()
 
 
@@ -148,15 +156,18 @@ if __name__ == "__main__":
                 query.append(stemmer.stem(formatted_arguments[i]))
 
         qr = QueryClass(query, vsm)
+        qr.computeSimilarities()
 
         # first index = location of unprocessed documents; second index = list of document titles ; third index = list of documents in order of similarity > 0
         # if the list at index 1 is empty, then there are no similar documents
         location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
+
         if len(location_and_documents[1]) > 0:
             print("\nResults:")
             for i in range(0, len(location_and_documents[1])):
                 # NOTE: this might be yielding an encoding error
                 try:
+                    print("\tDocument {0}:".format(i+1))
                     print("\t\tName:\t{0}".format(location_and_documents[1][i]))
                     print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
                     print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
@@ -166,6 +177,14 @@ if __name__ == "__main__":
 
         else:
             print("\nThere are no relevant results.")
+
+        # if len(location_and_documents[1]) == 0 then there are no relevant documents
+        # the lists at each index have the same size
+
+        # when user submits reelevant documents
+        # display these new results
+        #location_and_documents = WebDriverRelevanceFeedback(qr, iic, doc_location, query)
+
 
 
     except Exception as e:

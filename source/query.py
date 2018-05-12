@@ -68,18 +68,20 @@ class Query:
         self.all_similarities = updated_similarities[0:10]
 
 
+
     def relevanceFeedback(self, rel_and_irrel):
 
         # rel_and_irrel is a list of booleans corresponding to self.all_similarities
         # the indices marked True are the relevant documents, and False means irrelevant
+
         self.query_length = 0
         alpha = 1
         beta = 0.5
         gamma = 0
-        print("Old Query:\t{0}".format(self.query_vector))
 
         # separate the relevant and irrelevant documents
-        all_rel = all_irrel = []
+        all_rel = []
+        all_irrel = []
         for i in range(len(rel_and_irrel)):
             if rel_and_irrel[i]:
                 all_rel.append(i)
@@ -95,12 +97,14 @@ class Query:
             # update the relevant document weights
             for i in range(len(all_rel)):
                 # which_similar_doc = [docId, similarity_value]
-                which_similar_doc = self.all_similarities[i]
+                which_similar_doc = self.all_similarities[all_rel[i]]
+                #print("Rel Doc:\t{0}".format(which_similar_doc[0]))
                 self.query_vector[qt] += (beta / (len(all_rel))) * self.vsm.terms_weights[qt][which_similar_doc[0]-1]
 
             # update the irrelevant document weights
             for i in range(len(all_irrel)):
-                which_similar_doc = self.all_similarities[i]
+                which_similar_doc = self.all_similarities[all_irrel[i]]
+                #print("Irrel Doc:\t{0}".format(which_similar_doc[0]))
                 self.query_vector[qt] -= (gamma / (len(all_irrel))) * self.vsm.terms_weights[qt][which_similar_doc[0]-1]
 
             self.query_vector[qt] = float("{0:.3f}".format(self.query_vector[qt]))
@@ -109,5 +113,3 @@ class Query:
 
         # finish computing the query length
         self.query_length = float("{0:.3f}".format(math.sqrt(self.query_length)))
-
-        print("New Query:\t{0}".format(self.query_vector))
