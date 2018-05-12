@@ -115,7 +115,7 @@ if __name__ == "__main__":
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
-        #dp.runDocProc("../file_cache/unprocessed/" + doc_basename)
+        #dp.runDocProc("../../file_cache/unprocessed/" + doc_basename)
         iic = InvertedIndexClass()
         #iic.createInvertedIndex("../file_cache/processed/" + doc_basename)
         iic.loadInvertedIndex("../file_cache/processed/" + doc_basename)
