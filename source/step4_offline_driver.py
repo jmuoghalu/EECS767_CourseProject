@@ -1,5 +1,5 @@
 import sys
-sys.path.append("./nltk/")
+sys.path.append("./nltk-3.3/")
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from re import sub as re_sub
@@ -154,7 +154,7 @@ if __name__ == "__main__":
                     for i in range(0, len(location_and_documents[1])):
                         # NOTE: this might be yielding an encoding error
                         try:
-                            print("\t\tName:\t{0}".format(location_and_documents[1][i]))
+                            print("\t\tURL:\t{0}".format(location_and_documents[1][i]))
                             print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
                             print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
                             print("")

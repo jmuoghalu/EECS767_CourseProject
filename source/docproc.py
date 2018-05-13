@@ -1,5 +1,5 @@
 import sys
-sys.path.append("./nltk/")
+sys.path.append("./nltk-3.3/")
 import os
 from html.parser import HTMLParser
 from html.entities import name2codepoint
