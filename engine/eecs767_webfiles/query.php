@@ -1,17 +1,20 @@
 <?php
 
-
     $query = $_REQUEST['query'];
     $command = 'python /home/j286m692/EECS_767/EECS767_CourseProject/engine/test.py ' . $query;
     // $command = '.\web_driver.py 2>&1' . $query;
     //echo $command;
     $from_python = exec($command, $o, $r);
-    $results = json_encode($from_python);
-    $from_python = $results;
-    //var_dump($from_python);
-    //var_dump($results);
-    //var_dump($o);
-    //var_dump($r);
+    $from_python = json_decode($from_python, TRUE);
+    /*var_dump($from_python);
+    echo "<br />";
+    echo "<br />";
+    var_dump($o);
+    echo "<br />";
+    echo "<br />";
+    var_dump($r);
+    echo "<br />";
+    echo "<br />";*/
 
     echo '
     <!doctype html>
@@ -31,26 +34,25 @@
         </head>
         <body>
         <div class="container">
-            <h1>Search Results<h1><br />' . count($from_python);
-            foreach ($from_python as $i => $j)
+            <h1>Top 10 Search Results<h1><br /><ol>';
+            foreach ($from_python as $i => $result_i)
             {
-                echo 'abc';
-                /*
                 echo '
                 <br />
-                <div class="row h-10 align-items-center">
-                    <div class="col-12" style="text-align: left">
-                        <a href="' . $from_python[$i]->url . '"><h2><ins>' . $from_python[$i]->name . '</ins></a></h2>
-                        <h3><font color="green">' . $from_python[$i]->url . '</font></h3>
-                        <h3>' . $from_python[$i]->snapshot . '<h/3>
+                <li>
+                    <div class="row h-10 align-items-center">
+                        <div class="col-12" style="text-align: left">
+                            <a href=' . $result_i["url"] . '>' . $result_i["name"] . '</a>
+                            <h3><font color="green">' . $result_i['url'] . '</font></h3>
+                            <h3>' . $result_i["snapshot"] . '<h/3>
+                        </div>
                     </div>
-                </div>
+                </li>
                 <br />';
-                */
             }
 
         echo '
-        </div>
+        </ol></div>
 
 
         <!-- Optional JavaScript -->
