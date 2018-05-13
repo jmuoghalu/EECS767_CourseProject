@@ -1,5 +1,6 @@
 import sys
-sys.path.append("./nltk-3.3/")
+sys.path.append("/nltk-3.3/")
+sys.path.append("/home/j286m692/EECS_767/EECS767_CourseProject/source/nltk-3.3/")
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from re import sub as re_sub
@@ -7,7 +8,7 @@ from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
-import os
+import json, os
 
 def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
 
@@ -73,8 +74,7 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
         proc_doc_location += "/"
 
     if not os.path.exists(proc_doc_location):
-        print("The Input Directory Does Not Exist")
-        return
+        return ("The Input Directory Does Not Exist")
 
     try:
         unprocessed_location = "../file_cache/unprocessed/" + os.path.basename(os.path.dirname(proc_doc_location))
@@ -115,8 +115,9 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
 
 
 if __name__ == "__main__":
+    output = {}
     try:
-        doc_basename = "WikiWebCrawl" # the actual name of the folder containing the processed files
+        doc_basename = "testdoc" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
@@ -132,41 +133,47 @@ if __name__ == "__main__":
         stemmer = PorterStemmer()
 
         if len(sys.argv) < 2:
-            print("You Need to Give a Search Term")
-            sys.exit()
-
-        arguments = ""
-        query = []
-        # argument 0 is the file name
-        for argi in sys.argv[1:]:
-            arguments += "   {0}  ".format(argi)
-
-        formatted_arguments = (re_sub(r"[^a-zA-Z0-9_ ]+", "", arguments.lower().strip())).split()
-        for i in range(0, len(formatted_arguments)):
-            if formatted_arguments[i] not in stopwords.words("english"):
-                query.append(stemmer.stem(formatted_arguments[i]))
-
-        qr = QueryClass(query, vsm)
-        qr.computeSimilarities()
-
-        # first index = location of unprocessed documents; second index = list of document titles ; third index = list of documents in order of similarity > 0
-        # if the list at index 1 is empty, then there are no similar documents
-        location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
-        if len(location_and_documents[1]) > 0:
-            print("\nResults:")
-            for i in range(0, len(location_and_documents[1])):
-                # NOTE: this might be yielding an encoding error
-                try:
-                    print("\t\tURL:\t{0}".format(location_and_documents[1][i]))
-                    print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
-                    print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
-                    print("")
-                except Exception as e:
-                    print("Encoding Error")
+            output = {"ERROR MESSAGE": "You Need to Give a Search Term"}
 
         else:
-            print("\nThere are no relevant results.")
+            arguments = ""
+            query = []
+            # argument 0 is the file name
+            for argi in sys.argv[1:]:
+                arguments += "   {0}  ".format(argi)
+
+            formatted_arguments = (re_sub(r"[^a-zA-Z0-9_ ]+", "", arguments.lower().strip())).split()
+            for i in range(0, len(formatted_arguments)):
+                if formatted_arguments[i] not in stopwords.words("english"):
+                    query.append(stemmer.stem(formatted_arguments[i]))
+
+            qr = QueryClass(query, vsm)
+            qr.computeSimilarities()
+
+            # first index = location of unprocessed documents; second index = list of document titles ; third index = list of documents in order of similarity > 0
+            # if the list at index 1 is empty, then there are no similar documents
+            location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
+            if len(location_and_documents[1]) > 0:
+                for i in range(0, len(location_and_documents[1])):
+                    # NOTE: this might be yielding an encoding error
+                    output[str(i+1)] = {}
+                    try:
+                        #print("\t\tURL:\t{0}".format(location_and_documents[1][i]))
+                        output[str(i+1)]["url"] = location_and_documents[1][i]
+                        #print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
+                        output[str(i+1)]["name"] = location_and_documents[2][i]
+                        #print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
+                        output[str(i+1)]["snapshot"] = location_and_documents[3][i]
+                        #print("")
+                    except Exception as e:
+                        output[str(i+1)]["url"] = "ERROR"
+                        output[str(i+1)]["name"] = "ERROR"
+                        output[str(i+1)]["snapshot"] = "ERROR"
+                        #print("Encoding Error")
+
 
 
     except Exception as e:
-        raise()
+        output = {"ERROR MESSAGE": "Python Exception:\t{0}".format(str(e))}
+
+    print(json.dumps(output, sort_keys=True))

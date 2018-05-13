@@ -28,8 +28,7 @@ class InvertedIndex:
                 proc_doc_location += "/"
 
             if not os.path.exists(proc_doc_location):
-                print("The Input Directory Does Not Exist")
-                return
+                return ("The Input Directory Does Not Exist")
 
             """
             build the unsorted inverted index
@@ -118,8 +117,7 @@ class InvertedIndex:
             proc_doc_location += "/"
 
         if not os.path.exists(proc_doc_location):
-            print("The Input Directory Does Not Exist")
-            return
+            return ("The Input Directory Does Not Exist")
 
         iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
         if not os.path.isfile(iid_file_name):

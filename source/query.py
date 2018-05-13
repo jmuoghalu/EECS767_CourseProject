@@ -5,6 +5,7 @@ from vsm import VectorSpaceModel as VSMClass
 class Query:
     def __init__(self, query_terms, vsm: VSMClass):
         self.query_vector = {} # {term: idf} # idf is 0 if the query term is not in the index
+        self.flag_term_in_vsm = {query_terms[i]: False for i in range(len(query_terms))}
         self.document_lengths = vsm.document_lengths
         self.query_length = 0
         self.vsm = vsm
@@ -24,6 +25,7 @@ class Query:
                 qt_in_index = True # this term is in the index, and the weights have already been calculated
 
             if qt_in_index:
+                self.flag_term_in_vsm[qt] = True
                 qt_idf = self.vsm.terms_idf[qt]
                 self.query_vector[qt] = qt_idf
                 self.query_length += qt_idf*qt_idf
@@ -44,9 +46,11 @@ class Query:
         # populate the list of similarities, which is ordered by the dataset's docID's
         for qv, qv_idf in self.query_vector.items():
             # retreive the list of all tf-idf weights for the current query
-            term_row = self.vsm.terms_weights[qv]
-            for i in range(0, len(term_row)): # i = (docID-1)
-                self.all_similarities[i][1] += qv_idf * term_row[i]
+            if self.flag_term_in_vsm[qv]:
+                term_row = self.vsm.terms_weights[qv]
+                for i in range(0, len(term_row)): # i = (docID-1)
+                    self.all_similarities[i][1] += qv_idf * term_row[i]
+
 
         # complete the similarity calculation by dividing the value by the product of the two vectors' lengths
         for i in range(0, len(self.all_similarities)):
@@ -92,19 +96,20 @@ class Query:
         # NOTE: this relevance feedback function is using the full vector model
         for qt in self.vsm.terms_weights.keys():
 
-            self.query_vector[qt] = alpha * self.query_vector[qt]
+            try:
+                self.query_vector[qt] = alpha * self.query_vector[qt]
+            except KeyError as e:
+                self.query_vector[qt] = 0
 
             # update the relevant document weights
             for i in range(len(all_rel)):
                 # which_similar_doc = [docId, similarity_value]
                 which_similar_doc = self.all_similarities[all_rel[i]]
-                #print("Rel Doc:\t{0}".format(which_similar_doc[0]))
                 self.query_vector[qt] += (beta / (len(all_rel))) * self.vsm.terms_weights[qt][which_similar_doc[0]-1]
 
             # update the irrelevant document weights
             for i in range(len(all_irrel)):
                 which_similar_doc = self.all_similarities[all_irrel[i]]
-                #print("Irrel Doc:\t{0}".format(which_similar_doc[0]))
                 self.query_vector[qt] -= (gamma / (len(all_irrel))) * self.vsm.terms_weights[qt][which_similar_doc[0]-1]
 
             self.query_vector[qt] = float("{0:.3f}".format(self.query_vector[qt]))

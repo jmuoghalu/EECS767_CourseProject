@@ -1,12 +1,12 @@
 <?php
 
     $query = $_REQUEST['query'];
-    $command = 'python /home/j286m692/EECS_767/EECS767_CourseProject/engine/test.py ' . $query;
+    $command = 'cd /home/j286m692/EECS_767/EECS767_CourseProject/source/ && python3 step4_web_driver.py ' . $query;
     // $command = '.\web_driver.py 2>&1' . $query;
     //echo $command;
     $from_python = exec($command, $o, $r);
     $from_python = json_decode($from_python, TRUE);
-    /*var_dump($from_python);
+    var_dump($from_python);
     echo "<br />";
     echo "<br />";
     var_dump($o);
@@ -14,7 +14,7 @@
     echo "<br />";
     var_dump($r);
     echo "<br />";
-    echo "<br />";*/
+    echo "<br />";
 
     echo '
     <!doctype html>

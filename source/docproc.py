@@ -78,12 +78,10 @@ class DocProcessor(HTMLParser):
                 in_file_location += "/"
 
             if not os.path.exists(in_file_location):
-                print("The Input Directory Does Not Exist")
-                return proc_location
+                return ("The Input Directory Does Not Exist")
 
             for root, dirs, files in os.walk(in_file_location):
                 proc_location = "../file_cache/processed/" + os.path.basename(os.path.dirname(root)) + "/"
-                #print("proc_location: %s" % proc_location)
                 if not os.path.exists(proc_location):
                     os.makedirs(proc_location)
 
