@@ -1,11 +1,13 @@
-from nltk_source.stem.porter import PorterStemmer
-from nltk_source.corpus import stopwords
+import sys
+sys.path.append("./nltk/")
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
 from re import sub as re_sub
 from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
-import os, sys
+import os
 
 def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
 

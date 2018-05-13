@@ -1,8 +1,10 @@
+import sys
+sys.path.append("./nltk/")
 import os
 from html.parser import HTMLParser
 from html.entities import name2codepoint
-from nltk_source.stem.porter import PorterStemmer
-from nltk_source.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
 from re import sub as re_sub
 
 class DocProcessor(HTMLParser):
