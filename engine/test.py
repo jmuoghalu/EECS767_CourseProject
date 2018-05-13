@@ -1,4 +1,3 @@
-#!C:/Users/murga/AppData/Local/Programs/Python/Python36-32/python.exe
 import json
 if __name__ == "__main__":
     r = [

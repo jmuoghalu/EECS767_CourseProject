@@ -1,3 +1,4 @@
 *.ftpconfig
+*.htaccess
 *__pycache__
 */BooksCrawl/*
