@@ -120,7 +120,7 @@ def WebDriverRelevanceFeedback(qr:QueryClass, iic:InvertedIndexClass, proc_doc_l
         # checkboxes marked true means that the boolean at that index should be marked true
 
     qr.relevanceFeedback(rel_and_irrel)
-    qr.computeSimilarities()
+    qr.computeSimilarities(10)
     return getDocumentsWebDriver(qr, iic, proc_doc_location, query_terms)
 
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
                 query.append(stemmer.stem(formatted_arguments[i]))
 
         qr = QueryClass(query, vsm)
-        qr.computeSimilarities()
+        qr.computeSimilarities(10)
 
         # first index = location of unprocessed documents; second index = list of document titles ; third index = list of documents in order of similarity > 0
         # if the list at index 1 is empty, then there are no similar documents

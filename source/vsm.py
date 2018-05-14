@@ -13,6 +13,7 @@ class VectorSpaceModel:
         self.terms_weights = {} # {term: [weights]}
         # THIS VARIABLE IS ONLY FILLED WHEN THE createEntireModel FUNCTION IS cALLED
         self.document_vectors = {} # {docID: [weights]}
+        self.documents = iic.document_list
         self.document_lengths = iic.document_lengths
         self.index_basename = index_basename
 

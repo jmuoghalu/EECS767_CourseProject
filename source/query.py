@@ -40,7 +40,9 @@ class Query:
         # finish computing the query length
         self.query_length = float("{0:.3f}".format(math.sqrt(self.query_length)))
 
-    def computeSimilarities(self):
+
+
+    def computeSimilarities(self, totalToTake):
         self.all_similarities = [[(i+1), 0] for i in range(0,len(self.vsm.document_lengths))]
 
         # populate the list of similarities, which is ordered by the dataset's docID's
@@ -69,10 +71,65 @@ class Query:
                 break
             updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
             i += 1
-        self.all_similarities = updated_similarities[0:10]
+        self.all_similarities = updated_similarities[0:totalToTake]
 
 
 
+    # by the time this function is called, the similarities vector will have already been populated
+    def termProximity(self, proc_doc_location):
+
+        if not proc_doc_location[len(proc_doc_location)-1] == '/':
+            proc_doc_location += "/"
+
+        if not os.path.exists(proc_doc_location):
+            return ("The Input Directory Does Not Exist")
+
+        # iterate through the vector of most-similar documents
+        for i in range(len(self.all_similarities)):
+            current_docID = self.all_similarities[i][0]
+            current_doc_name = self.vsm.documents[current_docID-1][0]
+
+            # retrieve this document
+            file = open((proc_doc_location + current_doc_name + ".txt"), "r", encoding="UTF8")
+            print("{0}{1}.txt".format(proc_doc_location, current_doc_name.encode(encoding='utf_8', errors='ignore')))
+
+            # every word in this file will be a list index
+            file_text = file.read().strip().split()
+
+            # a dictionary of every occurrence of a query term in the file
+            # each vlaue corresponds to where in the file query term occurs
+            # use a dictionary so that key accesses will only be valid for terms that appear in the query
+            qt_single_occurrences = {qt: [] for qt in self.query_vector.keys()}
+            for j in range(len(file_text)):
+                try:
+                    qt_single_occurrences[file_text[j]].append(j)
+                except KeyError as e:
+                    None
+
+            # every occurrence of every query term has been recorded for this document
+            # merge the sublists and sort them, all while keeping track of which position corresponds to which word in the query
+            # afterwards, sort by the locations, not the words
+            qt_merged = []
+            for qt in qt_single_occurrences.keys():
+                for j in range(len(qt_single_occurrences[qt])):
+                    qt_merged.append((qt, qt_single_occurrences[qt][j]))
+            qt_merged = sorted(qt_merged, key=lambda qt: qt[1])
+
+            # the term occurrences are now ordered, so if two adjacent tuples correspond to a single query term appearing close together without any of the others in between, then drop one of the entries
+                # if the term is the first one in the query, then drop the lowest numbered occurrence of the two
+                # if the term is the last one in the query, then drop the highest numbered occurrence of the two
+                # else, search for three adjacent tuples, and drop the middle one
+            #for j in range(len(qt_merged)):
+
+
+            print(qt_single_occurrences)
+            print()
+            print(qt_merged)
+            print()
+            print()
+
+
+    # by the time this function is called, the similarities vector will have already been populated
     def relevanceFeedback(self, rel_and_irrel):
 
         # rel_and_irrel is a list of booleans corresponding to self.all_similarities

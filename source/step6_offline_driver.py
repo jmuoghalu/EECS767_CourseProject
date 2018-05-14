@@ -148,7 +148,7 @@ if __name__ == "__main__":
                     query.append(stemmer.stem(formatted_query[i]))
 
                 qr = QueryClass(query, vsm)
-                qr.computeSimilarities()
+                qr.computeSimilarities(10)
 
                 # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0; third = document titles; fourth = snapshot paragraph
                 # [unprocessed_location, most_similar_documents, document_titles, document_snapshots]
@@ -189,7 +189,7 @@ if __name__ == "__main__":
                         rel_and_irrel[relevant[i]-1] = True
 
                     qr.relevanceFeedback(rel_and_irrel)
-                    qr.computeSimilarities()
+                    qr.computeSimilarities(10)
                     location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)
                     if len(location_and_documents[1]) > 0:
                         print("\nUpdated Results:")
