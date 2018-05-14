@@ -1,20 +1,10 @@
 <?php
 
     $query = $_REQUEST['query'];
-    $command = 'cd /home/j286m692/EECS_767/EECS767_CourseProject/source/ && python3 step4_web_driver.py ' . $query;
-    // $command = '.\web_driver.py 2>&1' . $query;
-    //echo $command;
+    $stopwords = 'stopwords';
+    $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step4_web_driver.py ' . $query;
     $from_python = exec($command, $o, $r);
     $from_python = json_decode($from_python, TRUE);
-    var_dump($from_python);
-    echo "<br />";
-    echo "<br />";
-    var_dump($o);
-    echo "<br />";
-    echo "<br />";
-    var_dump($r);
-    echo "<br />";
-    echo "<br />";
 
     echo '
     <!doctype html>
@@ -37,12 +27,16 @@
             <h1>Top 10 Search Results<h1><br /><ol>';
             foreach ($from_python as $i => $result_i)
             {
+                $result_i["url"] = str_replace("%3A", ":", $result_i["url"]);
+                $result_i["url"] = str_replace("%2F", "/", $result_i["url"]);
+                $result_i["url"] = str_replace("%2E", ".", $result_i["url"]);
+                $result_i["url"] = str_replace(".html", "", $result_i["url"]);
                 echo '
                 <br />
                 <li>
                     <div class="row h-10 align-items-center">
                         <div class="col-12" style="text-align: left">
-                            <a href=' . $result_i["url"] . '>' . $result_i["name"] . '</a>
+                            <a href=' . $result_i["url"] . '>' . $result_i["url"] . '</a>
                             <h3><font color="green">' . $result_i['url'] . '</font></h3>
                             <h3>' . $result_i["snapshot"] . '<h/3>
                         </div>
