@@ -164,11 +164,12 @@ if __name__ == "__main__":
                             print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
                             print("")
                         except Exception as e:
-                            print("Encoding Error")
+                            print("\t\tFile Encoding Error")
 
                     valid_input = False
                     relevant = rel_and_irrel = None
                     while not valid_input:
+                        print("Choose the Relevant Documents (separated by spaces)")
                         relevant = input("Which Documents Are Relevant (1-{0}): ".format(len(location_and_documents[1]))).strip().split()
                         valid_input = True
                         for i in range(len(relevant)):
@@ -202,7 +203,7 @@ if __name__ == "__main__":
                                 print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
                                 print("")
                             except Exception as e:
-                                print("Encoding Error")
+                                print("\t\t File Encoding Error")
 
                     else:
                         print("\nThere are no relevant results.")

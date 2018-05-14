@@ -113,7 +113,7 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
 
 if __name__ == "__main__":
     try:
-        doc_basename = "Quotes" # the actual name of the folder containing the processed files
+        doc_basename = "docsnew" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
@@ -121,7 +121,6 @@ if __name__ == "__main__":
         iic = InvertedIndexClass()
         #iic.createInvertedIndex("../file_cache/processed/" + doc_basename)
         iic.loadInvertedIndex("../file_cache/processed/" + doc_basename)
-        vsm = VSMClass(iic, doc_basename)
         stemmer = PorterStemmer()
 
         continueLoop = True
@@ -143,6 +142,7 @@ if __name__ == "__main__":
                     if formatted_query[i] not in stopwords.words("english"):
                         query.append(stemmer.stem(formatted_query[i]))
 
+                vsm = VSMClass(iic, doc_basename)
                 qr = QueryClass(query, vsm)
                 qr.computeSimilarities(10)
 

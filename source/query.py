@@ -6,6 +6,7 @@ class Query:
     def __init__(self, query_terms, vsm: VSMClass):
         self.query_vector = {} # {term: idf} # idf is 0 if the query term is not in the index
         self.flag_term_in_vsm = {query_terms[i]: False for i in range(len(query_terms))}
+        self.proximity_scores = {} # {term: proximity_score}
         self.document_lengths = vsm.document_lengths
         self.query_length = 0
         self.vsm = vsm
@@ -48,10 +49,13 @@ class Query:
         # populate the list of similarities, which is ordered by the dataset's docID's
         for qv, qv_idf in self.query_vector.items():
             # retreive the list of all tf-idf weights for the current query
-            if self.flag_term_in_vsm[qv]:
-                term_row = self.vsm.terms_weights[qv]
-                for i in range(0, len(term_row)): # i = (docID-1)
-                    self.all_similarities[i][1] += qv_idf * term_row[i]
+            try:
+                if self.flag_term_in_vsm[qv]:
+                    term_row = self.vsm.terms_weights[qv]
+                    for i in range(0, len(term_row)): # i = (docID-1)
+                        self.all_similarities[i][1] += qv_idf * term_row[i]
+            except KeyError:
+                pass
 
 
         # complete the similarity calculation by dividing the value by the product of the two vectors' lengths
@@ -67,11 +71,14 @@ class Query:
         i = 0
         updated_similarities = []
         while not (i == (len(self.all_similarities))):
-            if self.all_similarities[i][1] == 0:
-                break
-            updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
+            if not self.all_similarities[i][1] == 0:
+                updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
             i += 1
-        self.all_similarities = updated_similarities[0:totalToTake]
+
+        if totalToTake > len(updated_similarities):
+            self.all_similarities = updated_similarities
+        else:
+            self.all_similarities = updated_similarities[0:totalToTake]
 
 
 
@@ -84,14 +91,22 @@ class Query:
         if not os.path.exists(proc_doc_location):
             return ("The Input Directory Does Not Exist")
 
+        # intiialize important variables
+        query_terms = []
+        self.proximity_scores = {}
+        for qt in self.query_vector.keys():
+            query_terms.append(qt)
+            self.proximity_scores[qt] = 0
+
         # iterate through the vector of most-similar documents
+        document_scores = []
         for i in range(len(self.all_similarities)):
+            document_scores.append(1) # save the score for this document
             current_docID = self.all_similarities[i][0]
             current_doc_name = self.vsm.documents[current_docID-1][0]
 
             # retrieve this document
             file = open((proc_doc_location + current_doc_name + ".txt"), "r", encoding="UTF8")
-            print("{0}{1}.txt".format(proc_doc_location, current_doc_name.encode(encoding='utf_8', errors='ignore')))
 
             # every word in this file will be a list index
             file_text = file.read().strip().split()
@@ -99,12 +114,31 @@ class Query:
             # a dictionary of every occurrence of a query term in the file
             # each vlaue corresponds to where in the file query term occurs
             # use a dictionary so that key accesses will only be valid for terms that appear in the query
-            qt_single_occurrences = {qt: [] for qt in self.query_vector.keys()}
+            qt_single_occurrences = {query_terms[i]: [] for i in range(len(query_terms))}
             for j in range(len(file_text)):
-                try:
-                    qt_single_occurrences[file_text[j]].append(j)
-                except KeyError as e:
-                    None
+                if file_text[j] in query_terms:
+                    try:
+                        qt_single_occurrences[file_text[j]].append(j)
+                    except KeyError as e:
+                        pass
+
+            # make sure that every query term occurs in this document
+            # if not, then remove the term from the query_terms list, and consider term proximity for the other terms
+            j = 0
+            while j < len(query_terms):
+                if len(qt_single_occurrences[query_terms[j]]) == 0:
+                    try:
+                        del qt_single_occurrences[query_terms[j]]
+                        query_terms.pop(j)
+                        continue
+                    except Exception as e:
+                        pass
+                j += 1
+
+
+            # if none of the query terms were found in this document, then continue
+            if qt_single_occurrences == {}:
+                continue
 
             # every occurrence of every query term has been recorded for this document
             # merge the sublists and sort them, all while keeping track of which position corresponds to which word in the query
@@ -119,14 +153,84 @@ class Query:
                 # if the term is the first one in the query, then drop the lowest numbered occurrence of the two
                 # if the term is the last one in the query, then drop the highest numbered occurrence of the two
                 # else, search for three adjacent tuples, and drop the middle one
-            #for j in range(len(qt_merged)):
+            # this is because we want to analyze the term proximities as the terms relate to each other, not to themselves
+            j = 0
+            while j < (len(qt_merged) - 1):
+                position_j = qt_merged[j]
+                if position_j[0] == query_terms[0]:
+                    next_position = qt_merged[j+1]
+                    if position_j[0] == next_position[0]:
+                        qt_merged.pop(j)
+                        continue
+                    j += 1
+                elif position_j[0] == query_terms[len(query_terms)-1]:
+                    next_position = qt_merged[j+1]
+                    if position_j[0] == next_position[0]:
+                        qt_merged.pop(j+1)
+                        continue
+                    j += 1
+                else:
+                    # if there are three adjacent tuples that correspond to a single query term
+                    if (j + 2) < len(qt_merged):
+                        next_position = qt_merged[j+1]
+                        after_next = qt_merged[j+2]
+                        if position_j[0] == next_position[0] == after_next[0]:
+                            qt_merged.pop(j+1)
+                            continue
+                j += 1
+
+            # we now have a relatively small list that can be used to score term proximities
+            # for every tuple in the list, calculate the minimum distance between the current term and the next term in the query
+            minimum_distances = {query_terms[k]:0 for k in range(len(query_terms))}
+            for k in range(len(qt_merged)-1):
+                current_term = qt_merged[k]
+                for m in range(k+1, len(qt_merged)):
+                    other_term = qt_merged[m]
+
+                    # move on if these are the same terms
+                    if not (current_term[0] == other_term[0]):
+                        this_distance = abs(current_term[1]-other_term[1])
+
+                        if (minimum_distances[current_term[0]] == 0) or (minimum_distances[current_term[0]] > this_distance):
+                            minimum_distances[current_term[0]] = this_distance
+                            #minimum_distances[other_term[0]] = this_distance
+
+            # at this point, we have a dictionary that tells us the minimum distance within the document of a word in the query and the next unique word in the query
+            # we will score this document by inversing each distance and taking the sum of these values
+                # we use inverse because the smaller the distance, then the closer the two words
+            for dv in minimum_distances.values():
+                if not dv == 0:
+                    document_scores[i] += (1/dv)
+
+            """
+            print("{0}{1}.txt".format(proc_doc_location, current_doc_name.encode(encoding='utf_8', errors='ignore')))
+            print(minimum_distances)
+            print("Score = {0}".format(document_scores[i]))
+            """
+        return document_scores
 
 
-            print(qt_single_occurrences)
-            print()
-            print(qt_merged)
-            print()
-            print()
+
+    def computeProximitySimilarities(self, document_scores, totalToTake):
+        # update the document similarities according to the proximity scores
+        for i in range(len(self.all_similarities)):
+            self.all_similarities[i][1] *= document_scores[i]
+
+        # lastly, sort the similarities
+        self.all_similarities = sorted(self.all_similarities, key=lambda l:l[1], reverse=True)
+
+        # drop the similarities if they == 0
+        i = 0
+        updated_similarities = []
+        while not (i == (len(self.all_similarities))):
+            if not self.all_similarities[i][1] == 0:
+                updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
+            i += 1
+
+        if totalToTake > len(updated_similarities):
+            self.all_similarities = updated_similarities
+        else:
+            self.all_similarities = updated_similarities[0:totalToTake]
 
 
     # by the time this function is called, the similarities vector will have already been populated
@@ -137,8 +241,8 @@ class Query:
 
         self.query_length = 0
         alpha = 1
-        beta = 0.5
-        gamma = 0
+        beta = 0.75
+        gamma = 0.25
 
         # separate the relevant and irrelevant documents
         all_rel = []

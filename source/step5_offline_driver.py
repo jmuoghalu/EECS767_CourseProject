@@ -99,9 +99,9 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
                     # search directory for file name without extension
                     # take the file, and replace the index with it
                     if name == os.path.splitext(f)[0]:
-                        document_titles[i] = dp.retrieveDocTitle(unprocessed_location + "/" + f).encode("utf-8", "ignore")
-                        document_snapshots[i] = dp.retrieveDocSnapshot(unprocessed_location + "/" + f, query_terms).encode("utf-8", "ignore")
-                        most_similar_documents[i] = f.encode("utf-8", "ignore")
+                        document_titles[i] = dp.retrieveDocTitle(unprocessed_location + "/" + f)
+                        document_snapshots[i] = dp.retrieveDocSnapshot(unprocessed_location + "/" + f, query_terms)
+                        most_similar_documents[i] = f
             break
 
         return [unprocessed_location, most_similar_documents, document_titles, document_snapshots]
@@ -121,23 +121,9 @@ if __name__ == "__main__":
         iic = InvertedIndexClass()
         #iic.createInvertedIndex("../file_cache/processed/" + doc_basename)
         iic.loadInvertedIndex("../file_cache/processed/" + doc_basename)
-        vsm = VSMClass(iic, doc_basename)
         stemmer = PorterStemmer()
 
         continueLoop = True
-
-        formatted_query = (re_sub(r"[^a-zA-Z0-9_ ]+", "", "colorado sand dunes".lower().strip())).split()
-        query = []
-        for i in range(0, len(formatted_query)):
-            if formatted_query[i] not in stopwords.words("english"):
-                query.append(stemmer.stem(formatted_query[i]))
-
-        qr = QueryClass(query, vsm)
-        qr.computeSimilarities(20)
-        qr.termProximity("../file_cache/processed/{0}".format(doc_basename));
-        sys.exit()
-
-
         print("Welcome to the Search Engine\n")
         while continueLoop:
             fromUser = ""
@@ -155,9 +141,10 @@ if __name__ == "__main__":
                     if formatted_query[i] not in stopwords.words("english"):
                         query.append(stemmer.stem(formatted_query[i]))
 
+                vsm = VSMClass(iic, doc_basename)
                 qr = QueryClass(query, vsm)
-                qr.computeSimilarities(10)
-                qr.termProximity("../file_cache/processed/{0}".format(doc_basename));
+                qr.computeSimilarities(20)
+                qr.computeProximitySimilarities(qr.termProximity("../file_cache/processed/{0}".format(doc_basename)), 10)
 
                 # first index = location of unprocessed documents; second index = list of documents in order of similarity > 0
                 location_and_documents = getDocuments(qr.all_similarities, iic, doc_location, query)

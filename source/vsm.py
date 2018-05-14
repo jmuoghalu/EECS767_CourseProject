@@ -50,15 +50,20 @@ class VectorSpaceModel:
         except KeyError: # the parameter term does not exist in the inverted index
             return False
 
-        # calculate and save the IDF value for this term
-        self.terms_idf[which_term] = entry.term_idf
+        # check if this row has already been created (i.e. the search engine has already built the entire model)
+        try:
+            self.terms_idf[which_term]
+            self.terms_weights[which_term]
+        except KeyError:
+            # calculate and save the IDF value for this term
+            self.terms_idf[which_term] = entry.term_idf
 
-        # initialize all weights as zero
-        self.terms_weights[which_term] = [0 for i in range(0, len(self.iic.document_list))]
+            # initialize all weights as zero
+            self.terms_weights[which_term] = [0 for i in range(0, len(self.iic.document_list))]
 
-        # if the term exists in this document, update the weight to the actual value
-        for docID, TF in entry.posting_list.items():
-            # ex.) document #1 is located at index 0 in the terms_weights value list
-            self.terms_weights[which_term][(docID-1)] = entry.term_idf * TF
+            # if the term exists in this document, update the weight to the actual value
+            for docID, TF in entry.posting_list.items():
+                # ex.) document #1 is located at index 0 in the terms_weights value list
+                self.terms_weights[which_term][(docID-1)] = entry.term_idf * TF
 
         return True
