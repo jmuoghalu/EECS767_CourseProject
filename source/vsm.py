@@ -1,29 +1,28 @@
 import math, os, re
 from indexer import InvertedIndex as InvertedIndexClass
 
-"""
-    Dictionary: {term: idf}
-    Dictionary: {term: [weights]}
-"""
-
 class VectorSpaceModel:
     def __init__(self, iic: InvertedIndexClass, index_basename):
         self.iic = iic
         self.terms_idf = {} # {term: IDF}
         self.terms_weights = {} # {term: [weights]}
+
         # THIS VARIABLE IS ONLY FILLED WHEN THE createEntireModel FUNCTION IS cALLED
         self.document_vectors = {} # {docID: [weights]}
+
+        # allows for more easy access of document information
         self.documents = iic.document_list
         self.document_lengths = iic.document_lengths
         self.index_basename = index_basename
+        
 
+    # for all of the inverted index terms and their posting lists, calculate the IDF values and the weights
+    # Note: the inverted_index is sorted alphabetically after its creation
     def createEntireModel(self):
-        # for all of the inverted index terms and their posting lists, calculate the IDF values and the weights
-        # Note: the inverted_index is sorted alphabetically after its creation
         for doc in self.iic.document_list:
             self.document_vectors[doc[1]-1] = [0 for i in range(len(self.iic.inverted_index.values()))]
 
-        doc_vec_index = 0
+        doc_vec_index = 0 # helper variable for traversing and filling the document vectors
         for term,entry in self.iic.inverted_index.items():
             # calculate and save the IDF value for this term
             self.terms_idf[term] = entry.term_idf
@@ -42,8 +41,8 @@ class VectorSpaceModel:
 
 
 
+    # fill the row of tf-idf weights for this parameter term only
     def createModelRow(self, which_term):
-        # fill the row of tf-idf weights for this parameter term
         entry = None
         try:
             entry = self.iic.inverted_index[which_term]

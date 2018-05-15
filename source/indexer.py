@@ -75,7 +75,7 @@ class InvertedIndex:
             self.inverted_index = OrderedDict(sorted(self.inverted_index.items(), key=lambda t: t[0])) # sort the inverted index
 
 
-            # save the inverted index to a text file
+            # save the inverted index to a specially-formatted text file
             iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
             iid_file = open(iid_file_name, "w", encoding="UTF8")
             self.document_lengths = [[i+1,0] for i in range(len(self.document_list))]
@@ -90,12 +90,9 @@ class InvertedIndex:
                 #iid_file.write("\tPosting List: (first line = docID,docTF; second line = docTFIDFweight)\n")
 
                 docIDandTF_line = ""
-                #weight_line = ""
                 for docID, TF in entry.posting_list.items():
                     self.document_lengths[docID-1][1] += (entry.term_idf*TF)*(entry.term_idf*TF)
                     docIDandTF_line += "{0},{1}\t\t".format(docID,TF)
-                    #weight_line += "{0}\t\t".format(entry.term_idf*TF)
-                #iid_file.write("\t\t{0}\n\t\t{1}\n\n\n".format(docIDandTF_line, weight_line))
                 iid_file.write("\t\t{0}\n\n\n".format(docIDandTF_line))
 
             iid_file.write("\nEND TERMS\n\n\nBEGIN DOCUMENTS\n\n\n")
@@ -103,7 +100,6 @@ class InvertedIndex:
                 self.document_lengths[docInfo[1]-1][1] = float("{0:.3f}".format(math.sqrt(self.document_lengths[docInfo[1]-1][1])))
                 iid_file.write("D{0}:\t{1}\n\tLength:\t{2}\n\n".format(docInfo[1], docInfo[0], self.document_lengths[docInfo[1]-1][1]))
             iid_file.write("\nEND DOCUMENTS")
-
             iid_file.close()
 
 
@@ -113,12 +109,15 @@ class InvertedIndex:
 
     # after calling createInvertedIndex, the inverted index has now been sorted and written to file
     def loadInvertedIndex(self, proc_doc_location):
+
+        # make sure the proc_doc_location exists and is properly formatted for retrieving files
         if not proc_doc_location[len(proc_doc_location)-1] == '/':
             proc_doc_location += "/"
-
         if not os.path.exists(proc_doc_location):
             return ("The Input Directory Does Not Exist")
 
+        # get the inverted index and save it in the self.inverted_index member variable
+            # if it already exists, then read from the text file, else call the index creation function which will automatically update self.inverted_index
         iid_file_name = "../data/" + os.path.basename(os.path.dirname(proc_doc_location)) + "_index.txt"
         if not os.path.isfile(iid_file_name):
             self.createInvertedIndex(proc_doc_location)
@@ -129,6 +128,7 @@ class InvertedIndex:
             file = open(iid_file_name, encoding="UTF8")
             reading_terms = reading_docs = False
 
+            # the index file is specially sorted, separating terms, their information, documents, and document lengths
             read_from_file = file.readline()
             while(read_from_file):
                 if read_from_file == "\n" or read_from_file == "":

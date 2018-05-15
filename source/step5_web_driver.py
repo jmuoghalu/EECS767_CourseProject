@@ -118,4 +118,5 @@ if __name__ == "__main__":
     except Exception as e:
         output = {"ERROR MESSAGE": "Python Exception:\t{0}".format(str(e))}
 
+    # print the documents so that the web page can see and access them
     print(json.dumps(output, sort_keys=True))

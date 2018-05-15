@@ -9,7 +9,7 @@ from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
-import os
+import json, os
 
 def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc_doc_location, query_terms):
 
@@ -107,6 +107,7 @@ if __name__ == "__main__":
         # if the list at index 1 is empty, then there are no similar documents
         location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
 
+        output = {}
         if len(location_and_documents[1]) > 0:
             for i in range(0, len(location_and_documents[1])):
                 # NOTE: this might be yielding an encoding error
@@ -127,4 +128,5 @@ if __name__ == "__main__":
     except Exception as e:
         output = {"ERROR MESSAGE": "Python Exception:\t{0}".format(str(e))}
 
+    # print the documents so that the web page can see and access them
     print(json.dumps(output, sort_keys=True))

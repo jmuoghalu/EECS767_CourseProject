@@ -15,12 +15,13 @@ class DocProcessor(HTMLParser):
         super().__init__()
         self.reset()
         self.out_file = None
-        self.in_title = self.in_body = self.in_para = self.in_script = self.in_cite = self.in_span = False
+        self.in_title = self.in_body = self.in_para = self.in_script = self.in_cite = self.in_span = False # flags for HTML parsing
         self.convert_charrefs = True
-        self.current_doc_title = self.current_line = ""
+        self.current_doc_title = self.current_line = "" # helper variables for displaying search results
         self.not_in_processing = False
         self.stemmer = PorterStemmer()
 
+        # get the stopwords for document processing
         english_file = open("./nltk-3.3/nltk_data/corpora/stopwords/english", "r", encoding="UTF8")
         self.english_words = english_file.read().strip().split()
         english_file.close()
@@ -54,13 +55,16 @@ class DocProcessor(HTMLParser):
             self.in_cite = False
 
     def handle_data(self, data):
+        # getting the name of a document result
         if self.in_title and self.not_in_processing:
             self.current_doc_title = data.strip() + " "
 
+        # getting the snapshot of a document result
         elif (not self.in_script) and (not self.in_title) and self.in_para and self.not_in_processing:
             if len(data.strip()) > 1:
                 self.current_line += data.strip() + " "
 
+        # HTML document processing
         elif (not self.in_script) and (not self.in_cite) and (not self.in_span) and (not self.not_in_processing):
             data_list = (re_sub(r"[^a-zA-Z0-9_ ]+", "", data.lower().strip())).split()
                 # re.sub = remove non alphanumeric characters from the string; NOTE: this alters the format of hyperlinks
@@ -77,12 +81,12 @@ class DocProcessor(HTMLParser):
     def runDocProc(self, in_file_location):
         self.not_in_processing = False
         try:
-            # in_file_location is a folder within the file_cache/unprocessed/
+            # in_file_location is a folder within the file_cache/unprocessed/ directory
             proc_location = ""
 
+            # error checking and formatting of the directory location
             if not in_file_location[len(in_file_location)-1] == '/':
                 in_file_location += "/"
-
             if not os.path.exists(in_file_location):
                 return ("The Input Directory Does Not Exist")
 
@@ -91,6 +95,7 @@ class DocProcessor(HTMLParser):
                 if not os.path.exists(proc_location):
                     os.makedirs(proc_location)
 
+                # the processed version of this file will be a .txt file with the same name
                 for f in files:
                     out_name = ""
                     for i in range(0, len(f)):
@@ -98,11 +103,10 @@ class DocProcessor(HTMLParser):
                             break
                         out_name += f[i]
 
+                    # process the file
                     curr_file = open((in_file_location + f), "r", encoding="UTF8")
                     self.out_file = open((proc_location + out_name + ".txt"), "w", encoding="UTF8")
-
                     self.feed(curr_file.read())
-
                     curr_file.close()
                     self.out_file.close()
 
@@ -119,6 +123,7 @@ class DocProcessor(HTMLParser):
             self.current_doc_title = ""
             ret = ""
             for read_from_file in file:
+                # read the HTML file until the title has been retrieved
                 self.feed(read_from_file.strip())
                 if not (self.current_doc_title == ""):
                     ret = self.current_doc_title
@@ -136,6 +141,7 @@ class DocProcessor(HTMLParser):
             self.not_in_processing = True
             ret = ""
 
+            # read the HTML file until the first paragraph has been retrieved, which will serve as the snapshot
             for read_from_file in file:
                 self.feed(read_from_file.strip())
 

@@ -5,11 +5,16 @@ from vsm import VectorSpaceModel as VSMClass
 class Query:
     def __init__(self, query_terms, vsm: VSMClass):
         self.query_vector = {} # {term: idf} # idf is 0 if the query term is not in the index
-        self.flag_term_in_vsm = {query_terms[i]: False for i in range(len(query_terms))}
-        self.proximity_scores = {} # {term: proximity_score}
-        self.document_lengths = vsm.document_lengths
         self.query_length = 0
+
+        # helper variable for determining if this query term has data within the vector model
+        self.flag_term_in_vsm = {query_terms[i]: False for i in range(len(query_terms))}
+
+        self.proximity_scores = {} # {term: proximity_score} # used in term proximity
+
+        # allowing for easier access of document information
         self.vsm = vsm
+        self.document_lengths = vsm.document_lengths
 
         # [[docID, query-doc similarity]]
         self.all_similarities = [[(i+1), 0] for i in range(0,len(self.vsm.document_lengths))]
@@ -19,17 +24,19 @@ class Query:
         for i in range(len(query_terms)):
             qt = query_terms[i]
             qt_in_index = False
+
             # make sure the word actually exists within the vector model and inverted index
             if not (qt in self.vsm.terms_weights):
                 qt_in_index = self.vsm.createModelRow(qt)
             else:
                 qt_in_index = True # this term is in the index, and the weights have already been calculated
 
-            if qt_in_index:
+            if qt_in_index: # the query term exists in the model, so update the query vector
                 self.flag_term_in_vsm[qt] = True
                 qt_idf = self.vsm.terms_idf[qt]
                 self.query_vector[qt] = qt_idf
                 self.query_length += qt_idf*qt_idf
+
             else: # this search term is not in the index, so mark a zero in the query vector
                 self.query_vector[qt] = 0
 
@@ -75,6 +82,7 @@ class Query:
                 updated_similarities.append([self.all_similarities[i][0], self.all_similarities[i][1]])
             i += 1
 
+        # the program will only take a specific number of the most similar documents
         if totalToTake > len(updated_similarities):
             self.all_similarities = updated_similarities
         else:
@@ -193,7 +201,6 @@ class Query:
 
                         if (minimum_distances[current_term[0]] == 0) or (minimum_distances[current_term[0]] > this_distance):
                             minimum_distances[current_term[0]] = this_distance
-                            #minimum_distances[other_term[0]] = this_distance
 
             # at this point, we have a dictionary that tells us the minimum distance within the document of a word in the query and the next unique word in the query
             # we will score this document by inversing each distance and taking the sum of these values
@@ -211,8 +218,8 @@ class Query:
 
 
 
+    # update the document similarities according to the previously calculated proximity scores
     def computeProximitySimilarities(self, document_scores, totalToTake):
-        # update the document similarities according to the proximity scores
         for i in range(len(self.all_similarities)):
             self.all_similarities[i][1] *= document_scores[i]
 
@@ -239,6 +246,7 @@ class Query:
         # rel_and_irrel is a list of booleans corresponding to self.all_similarities
         # the indices marked True are the relevant documents, and False means irrelevant
 
+        # relevance feedback data will be computed using Rocchio Algorithm
         self.query_length = 0
         alpha = 1
         beta = 0.75
@@ -273,8 +281,8 @@ class Query:
                 which_similar_doc = self.all_similarities[all_irrel[i]]
                 self.query_vector[qt] -= (gamma / (len(all_irrel))) * self.vsm.terms_weights[qt][which_similar_doc[0]-1]
 
+            # update query vector 
             self.query_vector[qt] = float("{0:.3f}".format(self.query_vector[qt]))
-
             self.query_length += self.query_vector[qt] * self.query_vector[qt]
 
         # finish computing the query length
