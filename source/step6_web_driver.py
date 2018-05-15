@@ -126,15 +126,11 @@ def WebDriverRelevanceFeedback(qr:QueryClass, iic:InvertedIndexClass, proc_doc_l
 
 if __name__ == "__main__":
     try:
-        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        doc_basename = "newly_crawled" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
-        #doc_basename = "testdoc" # the actual name of the folder containing the processed files
-        #doc_location = "../file_cache/unprocessed/" + doc_basename
 
         dp = DPClass()
-        #dp.runDocProc(doc_location)
         iic = InvertedIndexClass()
-        #iic.createInvertedIndex(doc_location)
         iic.loadInvertedIndex(doc_location)
 
         vsm = VSMClass(iic, doc_basename)

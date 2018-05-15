@@ -2,8 +2,8 @@
 
 import os, re, urllib, urllib.request, urllib.parse, urllib.robotparser
 from html.parser import HTMLParser
-from urllib.parse import urljoin
-from urllib.request import urlopen
+from urllib.parse import urljoin as urljoinFun
+from urllib.request import urlopen as urlopenFun
 
 # Trying to figure out certification errors on some sites
 hdr = {'User-Agent':'Mozilla/5.0', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
@@ -19,7 +19,7 @@ class HTMLParser(HTMLParser):
                     # do nothing for now
                     pass
                 elif tag == "a":                    # identify links
-                    url = urljoin(self.url, path)    # append relative path to the root path
+                    url = urljoinFun(self.url, path)    # append relative path to the root path
 
                     # standardize url so they don't end in '/', get rid of '#', and all start with http://
                     redundant = url.find('#')
@@ -47,7 +47,7 @@ class HTMLParser(HTMLParser):
         self.hyperlinks = []                  # init return list
 
         try:
-            openedURL = urlopen(url)
+            openedURL = urlopenFun(url)
             html = openedURL.read().decode("utf-8") # want unicode for best parser results
             self.feed(html)
         except KeyboardInterrupt:                   # be able to handle Ctrl-C if problem occurs or want to stop early
@@ -89,7 +89,7 @@ class mySpider(object):
             self.will_crawl.append(initial_url)    # put initial_url to will_crawl list if allowed
 
         filenum = 1                         # initialize number of files downloaded
-        directory = "Crawled/"
+        directory = "../file_cache/unprocessed/newly_crawled/"
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -98,17 +98,19 @@ class mySpider(object):
             url = self.will_crawl.pop(0)      # get next url
             try:
                 print ("Spider at:", url)
-                openedURL = urlopen(url)
+                openedURL = urlopenFun(url)
                 sourceCode = openedURL.read()
                 encoded = urllib.parse.quote(str(url), safe='.')      # encode URL so it can be a file name
                 encoded = encoded.replace(".", "%2E")
+
                 try:
-                    f = open('Crawled/%s.html' %encoded, 'w+')
+                    name = '{0}/{1}.html'.format(directory, encoded)
+                    f = open(name, 'wb')
                     f.write(sourceCode)
-                    f.close()
                     filenum = filenum + 1           # keeps track of files downloaded if needed
+                    f.close()
                 except:
-                    print ("Filename too long")
+                    print ("\tFile Exception\t{0}".format(name))
 
                 links = self.parser.findLinks(url)    # parse url
                 self.visted.add(url)            # mark url as visted

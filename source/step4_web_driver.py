@@ -61,7 +61,7 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
 if __name__ == "__main__":
     output = {}
     try:
-        doc_basename = "docsnew" # the actual name of the folder containing the processed files
+        doc_basename = "newly_crawled" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
@@ -106,7 +106,6 @@ if __name__ == "__main__":
                             output[str(i+1)]["url"] = "http://en.wikipedia.org/wiki/" + output[str(i+1)]["url"]
                         output[str(i+1)]["name"] = location_and_documents[2][i]
                         output[str(i+1)]["snapshot"] = location_and_documents[3][i]
-                        #print("")
                     except Exception as e:
                         output[str(i+1)]["url"] = "ERROR"
                         output[str(i+1)]["name"] = "ERROR"

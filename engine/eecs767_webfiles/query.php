@@ -1,8 +1,22 @@
 <?php
 
     $query = $_REQUEST['query'];
+    $which_search = $_REQUEST['button'];
     $stopwords = 'stopwords';
-    $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step4_web_driver.py ' . $query;
+    $command = '';
+    if ($which_search == 'BS')
+    {
+        $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step4_web_driver.py ' . $query;
+    }
+    else if ($which_search == 'TPS')
+    {
+        $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step5_web_driver.py ' . $query;    
+    }
+    else
+    {
+        $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step6_web_driver.py ' . $query;
+    }
+
     $from_python = exec($command, $o, $r);
     $from_python = json_decode($from_python, TRUE);
 

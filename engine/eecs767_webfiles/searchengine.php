@@ -26,9 +26,9 @@
                         <input type="text" name="query" class="form-control" placeholder="Enter search query">
                     </div>
                     <div class="button-group">
-                        <button type="submit" class="btn btn-default">Basic Search</button>
-                        <button type="submit" class="btn btn-default">Term Proximity Search</button>
-                        <button type="submit" class="btn btn-default">Relevance Feedback Search</button>
+                        <button type="submit" name="button" class="btn btn-default" value="BS">Basic Search</button>
+                        <button type="submit" name="button" class="btn btn-default" value="TPS">Term Proximity Search</button>
+                        <button type="submit" name="button" class="btn btn-default" value="RFS">Relevance Feedback Search</button>
                     </div>
                     </form>
                 </div>
