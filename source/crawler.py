@@ -2,6 +2,7 @@
 
 import sys, math
 from spider import mySpider
+import spider
 
 def print_usage():
     print ("\n------------------------- How to call ------------------------\n"
@@ -19,17 +20,17 @@ def main():
     # Check how to crawl decision
     if len(args) == 1:
         url = args[0]
-        print "Started crawling " + url + " domain"
+        print ("Started crawling " + url + " domain")
         spider = mySpider()
         spider.crawl(url, float('inf'))
-        print "Finished crawling " + url
+        print ("Finished crawling " + url)
     elif len(args) == 2:
         url = args[0]
         maxFiles = int(args[1])
-        print "Started crawling " + url + " domain"
+        print ("Started crawling " + url + " domain")
         spider = mySpider()
         spider.crawl(url, maxFiles)
-        print "Finished crawling " + url
+        print ("Finished crawling " + url)
     else:
         print_usage()
 

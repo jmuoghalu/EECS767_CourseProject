@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os, re, urllib, urllib2, urlparse, robotparser
-from HTMLParser import HTMLParser
-from urlparse import urljoin
-from urllib2 import urlopen
+import os, re, urllib, urllib.request, urllib.parse, urllib.robotparser
+from html.parser import HTMLParser
+from urllib.parse import urljoin
+from urllib.request import urlopen
 
 # Trying to figure out certification errors on some sites
 hdr = {'User-Agent':'Mozilla/5.0', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
@@ -42,7 +42,7 @@ class HTMLParser(HTMLParser):
     def findLinks(self, url):
         # Parse the URL to get links
         self.url = url
-        self.domain = "{uri.netloc}".format(uri=urlparse.urlparse(url))   # get domain of website
+        self.domain = "{uri.netloc}".format(uri=urllib.parse.urlparse(url))   # get domain of website
 
         self.hyperlinks = []                  # init return list
 
@@ -53,7 +53,7 @@ class HTMLParser(HTMLParser):
         except KeyboardInterrupt:                   # be able to handle Ctrl-C if problem occurs or want to stop early
             exit()
         except:
-            print "Some error occured."
+            print ("Some error occured.")
 
         return self.hyperlinks #returns links from url
 
@@ -78,13 +78,13 @@ class mySpider(object):
             initial_url = "http://" + initial_url
 
         # Add in check for robots.txt to insure it is polite
-        initdomain = "{uri.netloc}".format(uri=urlparse.urlparse(initial_url))
-        print "domain is " + initdomain
-        robot = robotparser.RobotFileParser()
+        initdomain = "{uri.netloc}".format(uri=urllib.parse.urlparse(initial_url))
+        print ("domain is " + initdomain)
+        robot = urllib.robotparser.RobotFileParser()
         robot.set_url("http://" + initdomain + "/robots.txt")
-        print "check 1"
+        print ("check 1")
         robot.read()
-        print "check 2"
+        print ("check 2")
         if (robot.can_fetch("*", initial_url)):
             self.will_crawl.append(initial_url)    # put initial_url to will_crawl list if allowed
 
@@ -97,10 +97,10 @@ class mySpider(object):
 
             url = self.will_crawl.pop(0)      # get next url
             try:
-                print "Spider at:", url
+                print ("Spider at:", url)
                 openedURL = urlopen(url)
                 sourceCode = openedURL.read()
-                encoded = urllib.quote(str(url), safe='.')      # encode URL so it can be a file name
+                encoded = urllib.parse.quote(str(url), safe='.')      # encode URL so it can be a file name
                 encoded = encoded.replace(".", "%2E")
                 try:
                     f = open('Crawled/%s.html' %encoded, 'w+')
@@ -108,7 +108,7 @@ class mySpider(object):
                     f.close()
                     filenum = filenum + 1           # keeps track of files downloaded if needed
                 except:
-                    print "Filename too long"
+                    print ("Filename too long")
 
                 links = self.parser.findLinks(url)    # parse url
                 self.visted.add(url)            # mark url as visted
@@ -121,7 +121,7 @@ class mySpider(object):
                             self.will_crawl.append(url)
                     except:
                         self.visted.add(url)
-                        print "Some error occurred adding to frontier."
-            except urllib2.HTTPError as e:
+                        print ("Some error occurred adding to frontier.")
+            except Exception as e:
                 self.visted.add(url)
                 print(e)

@@ -31,6 +31,7 @@
                 $result_i["url"] = str_replace("%2F", "/", $result_i["url"]);
                 $result_i["url"] = str_replace("%2E", ".", $result_i["url"]);
                 $result_i["url"] = str_replace(".html", "", $result_i["url"]);
+                $result_i["url"] = str_replace(".htm", "", $result_i["url"]);
                 echo '
                 <br />
                 <li>
