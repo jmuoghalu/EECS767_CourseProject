@@ -9,7 +9,7 @@ from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
-import json, os
+import json, os, string
 
 
 def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc_doc_location, query_terms):
@@ -99,20 +99,20 @@ if __name__ == "__main__":
             # if the list at index 1 is empty, then there are no similar documents
             location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
             if len(location_and_documents[1]) > 0:
+                letter_keys = list(string.ascii_lowercase[:len(location_and_documents[1])])
                 for i in range(0, len(location_and_documents[1])):
                     # NOTE: this might be yielding an encoding error
-                    output[str(i+1)] = {}
+                    output[letter_keys[i]] = {}
                     try:
-                        output[str(i+1)]["url"] = location_and_documents[1][i]
+                        output[letter_keys[i]]["url"] = location_and_documents[1][i]
                         if doc_basename == "docsnew":
-                            output[str(i+1)]["url"] = "http://en.wikipedia.org/wiki/" + output[str(i+1)]["url"]
-                        output[str(i+1)]["name"] = location_and_documents[2][i]
-                        output[str(i+1)]["snapshot"] = location_and_documents[3][i]
+                            output[letter_keys[i]]["url"] = "http://en.wikipedia.org/wiki/" + output[letter_keys[i]]["url"]
+                        output[letter_keys[i]]["name"] = location_and_documents[2][i]
+                        output[letter_keys[i]]["snapshot"] = location_and_documents[3][i]
                     except Exception as e:
-                        output[str(i+1)]["url"] = "ERROR"
-                        output[str(i+1)]["name"] = "ERROR"
-                        output[str(i+1)]["snapshot"] = "ERROR"
-
+                        output[letter_keys[i]]["url"] = "ERROR"
+                        output[letter_keys[i]]["name"] = "ERROR"
+                        output[letter_keys[i]]["snapshot"] = "ERROR"
 
 
     except Exception as e:

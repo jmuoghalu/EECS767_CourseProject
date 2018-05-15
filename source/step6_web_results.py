@@ -9,8 +9,8 @@ from docproc import DocProcessor as DPClass
 from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
+import urllib.request
 import json, os, string
-
 
 def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc_doc_location, query_terms):
 
@@ -18,7 +18,8 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
         proc_doc_location += "/"
 
     if not os.path.exists(proc_doc_location):
-        return ("The Input Directory Does Not Exist")
+        print("The Input Directory Does Not Exist")
+        return
 
     try:
         unprocessed_location = "../file_cache/unprocessed/" + os.path.basename(os.path.dirname(proc_doc_location))
@@ -57,32 +58,45 @@ def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc
 
 
 
+def WebDriverRelevanceFeedback(qr:QueryClass, iic:InvertedIndexClass, proc_doc_location, query_terms):
+    # if returning n results, initialize an n-sized list of booleans as true
+    rel_and_irrel = [False for i in range(len(location_and_documents[1]))]
+    # place the HTML checkboxes in a list
+        # checkboxes marked true means that the boolean at that index should be marked true
+
+    qr.relevanceFeedback(rel_and_irrel)
+    qr.computeSimilarities(10)
+    return getDocumentsWebDriver(qr, iic, proc_doc_location, query_terms)
+
 
 if __name__ == "__main__":
+
     output = {}
     try:
-        doc_basename = "newly_crawled" # the actual name of the folder containing the processed files
-        doc_location = "../file_cache/processed/" + doc_basename
+        try:
+            doc_basename = "newly_crawled" # the actual name of the folder containing the processed files
+            doc_location = "../file_cache/processed/" + doc_basename
 
-        dp = DPClass()
-        iic = InvertedIndexClass()
-        iic.loadInvertedIndex("../file_cache/processed/" + doc_basename)
-        vsm = VSMClass(iic, doc_basename)
+            dp = DPClass()
+            iic = InvertedIndexClass()
+            iic.loadInvertedIndex(doc_location)
 
-        stemmer = PorterStemmer()
+            vsm = VSMClass(iic, doc_basename)
+            vsm.createEntireModel()
+            stemmer = PorterStemmer()
 
-        english_file = open("./nltk-3.3/nltk_data/corpora/stopwords/english", "r", encoding="UTF8")
-        english_words = english_file.read().strip().split()
-        english_file.close()
+            english_file = open("./nltk-3.3/nltk_data/corpora/stopwords/english", "r", encoding="UTF8")
+            english_words = english_file.read().strip().split()
+            english_file.close()
 
-        if len(sys.argv) < 2:
-            output = {"ERROR MESSAGE": "You Need to Give a Search Term"}
+            if len(sys.argv) < 3:
+                print("You Need to Give the Search Term and the Feedback String")
+                sys.exit()
 
-        else:
             arguments = ""
             query = []
             # argument 0 is the file name
-            for argi in sys.argv[1:]:
+            for argi in sys.argv[1:(len(sys.argv)-1)]:
                 arguments += "   {0}  ".format(argi)
 
             formatted_arguments = (re_sub(r"[^a-zA-Z0-9_ ]+", "", arguments.lower().strip())).split()
@@ -95,7 +109,22 @@ if __name__ == "__main__":
 
             # first index = location of unprocessed documents; second index = list of document titles ; third index = list of documents in order of similarity > 0
             # if the list at index 1 is empty, then there are no similar documents
+
             location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
+
+            print(query)
+            rel_and_irrel = [False for i in range(len(location_and_documents[1]))]
+            feedback_string = sys.argv[len(sys.argv)-1]
+            relevant = feedback_string.split("_")
+            for i in range(len(relevant)):
+                rel_and_irrel[int(relevant[i])-1] = True
+
+            qr.relevanceFeedback(rel_and_irrel)
+            qr.computeSimilarities(10)
+
+            location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
+
+            output = {}
             if len(location_and_documents[1]) > 0:
                 letter_keys = list(string.ascii_lowercase[:len(location_and_documents[1])])
                 for i in range(0, len(location_and_documents[1])):
@@ -112,9 +141,11 @@ if __name__ == "__main__":
                         output[letter_keys[i]]["name"] = "ERROR"
                         output[letter_keys[i]]["snapshot"] = "ERROR"
 
+        except Exception as e:
+            output = {"ERROR MESSAGE": "Python Exception:\t{0}".format(str(e))}
 
-    except Exception as e:
-        output = {"ERROR MESSAGE": "Python Exception:\t{0}".format(str(e))}
+        # print the documents so that the web page can see and access them
+        print(json.dumps(output, sort_keys=True, ))
 
-    # print the documents so that the web page can see and access them
-    print(json.dumps(output, sort_keys=True))
+    except KeyboardInterrupt:
+        sys.exit()

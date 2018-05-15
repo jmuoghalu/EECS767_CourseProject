@@ -9,3 +9,8 @@ html, body {
 .container {
     margin: 10px
 }
+
+.check_relevance {
+        height: 600%;
+        width: 600%;
+}
