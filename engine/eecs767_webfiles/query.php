@@ -10,7 +10,7 @@
     }
     else if ($which_search == 'TPS')
     {
-        $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step5_web_driver.py ' . $query;    
+        $command = 'cd ../../EECS_767/EECS767_CourseProject/source/ && python3 step5_web_driver.py ' . $query;
     }
     else
     {
@@ -53,7 +53,7 @@
                         <div class="col-12" style="text-align: left">
                             <a href=' . $result_i["url"] . '>' . $result_i["url"] . '</a>
                             <h3><font color="green">' . $result_i['url'] . '</font></h3>
-                            <h3>' . $result_i["snapshot"] . '<h/3>
+                            <h3><font color="black">' . $result_i['snapshot'] . '</font></h3>
                         </div>
                     </div>
                 </li>

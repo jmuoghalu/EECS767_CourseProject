@@ -1,5 +1,7 @@
 import sys
-sys.path.append("./nltk-3.3/")
+sys.path.append("/nltk-3.3/")
+sys.path.append("/home/j286m692/EECS_767/EECS767_CourseProject/source/nltk-3.3/")
+sys.path.append("/home/j286m692/nltk_data/")
 import os
 from html.parser import HTMLParser
 from html.entities import name2codepoint
@@ -18,6 +20,10 @@ class DocProcessor(HTMLParser):
         self.current_doc_title = self.current_line = ""
         self.not_in_processing = False
         self.stemmer = PorterStemmer()
+
+        english_file = open("./nltk-3.3/nltk_data/corpora/stopwords/english", "r", encoding="UTF8")
+        self.english_words = english_file.read().strip().split()
+        english_file.close()
 
     def handle_starttag(self, tag, attrs):
         if tag == "title":
@@ -60,7 +66,7 @@ class DocProcessor(HTMLParser):
                 # re.sub = remove non alphanumeric characters from the string; NOTE: this alters the format of hyperlinks
 
             # do not add raw numbers to the token stream
-            rm_dl_stopwords = [dl for dl in data_list if (dl not in stopwords.words("english")) and (not dl.isdigit())]
+            rm_dl_stopwords = [dl for dl in data_list if (dl not in self.english_words) and (not dl.isdigit())]
             stemmed_list = [self.stemmer.stem(dl) for dl in rm_dl_stopwords]
 
             if len(stemmed_list) > 0:
@@ -136,7 +142,7 @@ class DocProcessor(HTMLParser):
                 if not (self.current_line == ""):
                     rm_internal_tags = re_sub(r"[<.*>]+", "", self.current_line.lower().strip())
                     line_list_of_words = re_sub(r"[^a-zA-Z0-9_ ]+", "", rm_internal_tags).split()
-                    rm_llw_stopwords = [lw for lw in line_list_of_words if lw not in stopwords.words("english")]
+                    rm_llw_stopwords = [lw for lw in line_list_of_words if lw not in self.english_words]
                     stem_llw = [self.stemmer.stem(lw) for lw in rm_llw_stopwords]
 
                     # check for any shared elements between the query and this line in the file

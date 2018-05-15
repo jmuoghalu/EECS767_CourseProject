@@ -1,5 +1,7 @@
 import sys
-sys.path.append("./nltk-3.3/")
+sys.path.append("/nltk-3.3/")
+sys.path.append("/home/j286m692/EECS_767/EECS767_CourseProject/source/nltk-3.3/")
+sys.path.append("/home/j286m692/nltk_data/")
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from re import sub as re_sub
@@ -8,64 +10,6 @@ from indexer import InvertedIndex as InvertedIndexClass
 from vsm import VectorSpaceModel as VSMClass
 from query import Query as QueryClass
 import os
-
-def debugPrint(query: QueryClass, vsm: VSMClass, iic: InvertedIndexClass):
-
-    """
-    print("\n\nInverted Index:")
-    for term, index in iic.inverted_index.items():
-        print(end="" "{ %s , %s , %s } " % (index.term, index.term_df, index.term_tf) )
-        first = True
-        if len(index.term) < 4:
-            print(end="" "\t")
-        print(end="" "\t\t -> ")
-
-        for docID, TF in index.posting_list.items():
-            if not first:
-                print(end="" " -> ")
-            print(end="" "[%s | %s]" % (docID, TF))
-            first = False
-        print("")
-
-    print("\n\nVector Space Model")
-    print("term\t\tIDF\t\t", end='')
-    for x in iic.document_list:
-        print(x[0] + "\t\t", end='')
-    print()
-
-    for term, IDF in vsm.terms_idf.items():
-        if len(term) < 8:
-            print(term + "\t\t", end='')
-        else:
-            print(term + "\t", end='')
-        print(str(IDF) + "\t\t", end='')
-
-        for weight in vsm.terms_weights[term]:
-            print(str(weight) + "\t\t", end='')
-
-        print()
-
-    print("\n\nDocument Lengths")
-    for i in range(0, len(vsm.document_vectors)):
-        doc = vsm.document_vectors[i]
-        print(end='' "\t[ %s" % (str(doc[0])))
-        for j in range(1,len(doc)):
-            print(end='' ", %s" % (str(doc[j])))
-        print("] == |%s|" % (vsm.document_lengths[i][1])) #
-        print("\t[...] == |%s|" % (vsm.document_lengths[i][1]))
-    #"""
-
-    #"""
-    print("\n\nQuery")
-    print("Terms: %s" % (query.query_vector.keys()))
-    print(end='' "Result:\n\t[D%s,\t%s]" %
-        (query.all_similarities[0][0], query.all_similarities[0][1]))
-    for i in range(1, len(query.all_similarities)):
-        print(end='' ",\n\t[D%s,\t%s]" %
-            (query.all_similarities[i][0], query.all_similarities[i][1]))
-    #"""
-    print("\n\n")
-
 
 def getDocumentsWebDriver(similarities, iic:InvertedIndexClass, dp:DPClass, proc_doc_location, query_terms):
 
@@ -137,6 +81,9 @@ if __name__ == "__main__":
         vsm.createEntireModel()
         stemmer = PorterStemmer()
 
+        english_file = open("./nltk-3.3/nltk_data/corpora/stopwords/english", "r", encoding="UTF8")
+        english_words = english_file.read().strip().split()
+        english_file.close()
 
         if len(sys.argv) < 2:
             print("You Need to Give a Search Term")
@@ -150,7 +97,7 @@ if __name__ == "__main__":
 
         formatted_arguments = (re_sub(r"[^a-zA-Z0-9_ ]+", "", arguments.lower().strip())).split()
         for i in range(0, len(formatted_arguments)):
-            if formatted_arguments[i] not in stopwords.words("english"):
+            if formatted_arguments[i] not in english_words:
                 query.append(stemmer.stem(formatted_arguments[i]))
 
         qr = QueryClass(query, vsm)
@@ -161,29 +108,23 @@ if __name__ == "__main__":
         location_and_documents = getDocumentsWebDriver(qr.all_similarities, iic, dp, doc_location, query)
 
         if len(location_and_documents[1]) > 0:
-            print("\nResults:")
             for i in range(0, len(location_and_documents[1])):
                 # NOTE: this might be yielding an encoding error
+                output[str(i+1)] = {}
                 try:
-                    print("\tDocument {0}:".format(i+1))
-                    print("\t\tURL:\t{0}".format(location_and_documents[1][i]))
-                    print("\t\tTitle:\t{0}".format(location_and_documents[2][i]))
-                    print("\t\tSnapshot:\t{0}".format(location_and_documents[3][i]))
-                    print("")
+                    output[str(i+1)]["url"] = location_and_documents[1][i]
+                    if doc_basename == "docsnew":
+                        output[str(i+1)]["url"] = "http://en.wikipedia.org/wiki/" + output[str(i+1)]["url"]
+                    output[str(i+1)]["name"] = location_and_documents[2][i]
+                    output[str(i+1)]["snapshot"] = location_and_documents[3][i]
                 except Exception as e:
-                    print("Encoding Error")
-
-        else:
-            print("\nThere are no relevant results.")
-
-        # if len(location_and_documents[1]) == 0 then there are no relevant documents
-        # the lists at each index have the same size
-
-        # when user submits reelevant documents
-        # display these new results
-        #location_and_documents = WebDriverRelevanceFeedback(qr, iic, doc_location, query)
+                    output[str(i+1)]["url"] = "ERROR"
+                    output[str(i+1)]["name"] = "ERROR"
+                    output[str(i+1)]["snapshot"] = "ERROR"
 
 
 
     except Exception as e:
-        raise()
+        output = {"ERROR MESSAGE": "Python Exception:\t{0}".format(str(e))}
+
+    print(json.dumps(output, sort_keys=True))
