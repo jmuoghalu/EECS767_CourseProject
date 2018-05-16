@@ -113,7 +113,7 @@ def getDocuments(similarities, iic:InvertedIndexClass, proc_doc_location, query_
 
 if __name__ == "__main__":
     try:
-        doc_basename = "newly_crawled" # the actual name of the folder containing the processed files
+        doc_basename = "docsnew" # the actual name of the folder containing the processed files
         doc_location = "../file_cache/processed/" + doc_basename
 
         dp = DPClass()
