@@ -136,7 +136,7 @@ class DocProcessor(HTMLParser):
 
 
     def retrieveDocSnapshot(self, full_file_name, query_terms):
-        file = open(full_file_name, "r")
+        file = open(full_file_name, "r", encoding="UTF8")
         try:
             self.not_in_processing = True
             ret = ""
